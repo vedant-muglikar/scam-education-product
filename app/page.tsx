@@ -15,6 +15,8 @@ export default async function HomePage() {
   if (!user) {
     redirect("/signin");
   }
+
+  console.log(user.user_metadata);
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -37,8 +39,12 @@ export default async function HomePage() {
             </Link>
             <div className="flex items-center gap-2 ml-4 pl-4 border-l">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span className="text-xs">{user.email}</span>
+                <img
+                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-300 hover:border-blue-500 cursor-pointer transition"
+                  src={user.user_metadata.avatar_url}
+                  alt="user avatar"
+                />
+                <span className="text-xs">{user.user_metadata.full_name}</span>
               </div>
               <LogoutButton />
             </div>

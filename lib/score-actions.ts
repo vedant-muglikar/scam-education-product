@@ -37,6 +37,7 @@ export async function saveScore(scoreData: Omit<GameScore, "user_id">) {
 
       console.log(existingData);
       console.log(scoreData.score);
+      console.log(user);
 
       if (fetchError) {
         console.error("Error fetching existing bingo score:", fetchError);
@@ -64,6 +65,7 @@ export async function saveScore(scoreData: Omit<GameScore, "user_id">) {
           score: scoreData.score,
           email: user.email,
           user_id: user.id,
+          name: user.user_metadata.name || user.email,
         });
 
         if (error) {

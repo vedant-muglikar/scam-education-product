@@ -606,6 +606,14 @@ export default function ScamBingoPage() {
               <Button onClick={startGame} size="lg" className="text-lg px-8">
                 Start Red Flag Hunt
               </Button>
+              <div className="mt-4">
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/scam-bingo/leaderboard">
+                    <Trophy className="h-4 w-4 mr-2" />
+                    View Leaderboard
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </main>
@@ -695,6 +703,15 @@ export default function ScamBingoPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button onClick={restartGame} className="flex-1">
                 Play Again
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 bg-transparent">
+                <Link href="/scam-bingo/leaderboard">
+                  <Trophy className="h-4 w-4 mr-2" />
+                  Leaderboard
+                </Link>
               </Button>
               <Button
                 asChild
@@ -849,7 +866,8 @@ export default function ScamBingoPage() {
                       </Button>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      You marked this as <strong>Safe</strong>. Now identify the indicators that make it legitimate:
+                      You marked this as <strong>Safe</strong>. Now identify the
+                      indicators that make it legitimate:
                     </p>
                     <div className="grid grid-cols-4 gap-3">
                       {greenFlags.map((flag) => {
