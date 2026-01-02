@@ -7,8 +7,6 @@ export interface LeaderboardEntry {
   created_at: string;
   user_id: string;
   name: string;
-  avatar_url?: string;
-  user_data?: any;
 }
 
 export async function getLeaderboard(limit: number = 10) {

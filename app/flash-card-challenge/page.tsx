@@ -216,56 +216,68 @@ export default function FlashCardChallengePage() {
 
   if (!isActive && !gameOver) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-yellow-500/5">
+        <header className="border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm">
+          <div className="container mx-auto px-4 py-5">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
               <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">Back to Home</span>
+              <span className="text-sm font-medium">Back to Home</span>
             </Link>
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-12">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-secondary/20 mb-6">
-              <Zap className="h-10 w-10 text-secondary-foreground" />
+        <main className="container mx-auto px-4 py-20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-white/5 bg-[size:50px_50px] [mask-image:radial-gradient(white,transparent_85%)]" />
+          <div className="max-w-2xl mx-auto text-center relative">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/10 mb-8 shadow-lg">
+              <Zap className="h-12 w-12 text-yellow-600" />
             </div>
-            <h1 className="text-4xl font-bold mb-4">Flash-Card Challenge</h1>
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+            <h1 className="text-5xl md:text-6xl font-extrabold mb-6 tracking-tight">
+              Flash-Card Challenge
+            </h1>
+            <p className="text-xl text-muted-foreground/90 mb-10 leading-relaxed font-light">
               Test your scam detection skills! You'll see {flashCards.length}{" "}
               messages. Quickly decide if each one is a SCAM or SAFE. Race
               against time to build your streak!
             </p>
 
-            <Card className="p-8 mb-8">
-              <h2 className="text-xl font-semibold mb-4">How to Play</h2>
-              <ul className="text-left space-y-3 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">•</span>
-                  <span>
+            <Card className="p-8 mb-10 border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
+              <h2 className="text-2xl font-bold mb-6">How to Play</h2>
+              <ul className="text-left space-y-4 text-muted-foreground/80">
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-600 mt-1 text-lg">•</span>
+                  <span className="text-base">
                     You have 60 seconds to categorize as many cards as possible
                   </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">•</span>
-                  <span>Each correct answer earns points + streak bonuses</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-600 mt-1 text-lg">•</span>
+                  <span className="text-base">
+                    Each correct answer earns points + streak bonuses
+                  </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">•</span>
-                  <span>Wrong answers reset your streak</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-600 mt-1 text-lg">•</span>
+                  <span className="text-base">
+                    Wrong answers reset your streak
+                  </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">•</span>
-                  <span>Learn from explanations after each card</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-600 mt-1 text-lg">•</span>
+                  <span className="text-base">
+                    Learn from explanations after each card
+                  </span>
                 </li>
               </ul>
             </Card>
 
-            <Button onClick={startGame} size="lg" className="text-lg px-8">
-              Start Challenge
+            <Button
+              onClick={startGame}
+              size="lg"
+              className="text-lg px-10 py-6 bg-yellow-600 hover:bg-yellow-700 text-white shadow-lg hover:shadow-xl transition-all">
+              Start Challenge →
             </Button>
           </div>
         </main>
@@ -282,60 +294,67 @@ export default function FlashCardChallengePage() {
         : 0;
 
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-yellow-500/5">
+        <header className="border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm">
+          <div className="container mx-auto px-4 py-5">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
               <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">Back to Home</span>
+              <span className="text-sm font-medium">Back to Home</span>
             </Link>
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-12">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-secondary/20 mb-6">
-              <Trophy className="h-10 w-10 text-secondary-foreground" />
+        <main className="container mx-auto px-4 py-20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-white/5 bg-[size:50px_50px] [mask-image:radial-gradient(white,transparent_85%)]" />
+          <div className="max-w-2xl mx-auto text-center relative">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/10 mb-8 shadow-lg">
+              <Trophy className="h-12 w-12 text-yellow-600" />
             </div>
-            <h2 className="text-4xl font-bold mb-4">Challenge Complete!</h2>
-            <p className="text-lg text-muted-foreground mb-8">
+            <h2 className="text-5xl font-extrabold mb-6 tracking-tight">
+              Challenge Complete!
+            </h2>
+            <p className="text-xl text-muted-foreground/90 mb-10 font-light">
               Here's how you performed
             </p>
 
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <Card className="p-6">
-                <div className="text-3xl font-bold text-primary mb-2">
+            <div className="grid grid-cols-3 gap-6 mb-10">
+              <Card className="p-8 border-border/50 bg-card/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all">
+                <div className="text-4xl font-bold text-yellow-600 mb-2">
                   {score}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Score</div>
+                <div className="text-sm text-muted-foreground/80 font-medium">
+                  Total Score
+                </div>
               </Card>
-              <Card className="p-6">
-                <div className="text-3xl font-bold text-primary mb-2">
+              <Card className="p-8 border-border/50 bg-card/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all">
+                <div className="text-4xl font-bold text-yellow-600 mb-2">
                   {accuracy}%
                 </div>
-                <div className="text-sm text-muted-foreground">Accuracy</div>
+                <div className="text-sm text-muted-foreground/80 font-medium">
+                  Accuracy
+                </div>
               </Card>
-              <Card className="p-6">
-                <div className="text-3xl font-bold text-primary mb-2">
+              <Card className="p-8 border-border/50 bg-card/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all">
+                <div className="text-4xl font-bold text-yellow-600 mb-2">
                   {answers.filter((a) => a.correct).length}/{answers.length}
                 </div>
-                <div className="text-sm text-muted-foreground">Correct</div>
+                <div className="text-sm text-muted-foreground/80 font-medium">
+                  Correct
+                </div>
               </Card>
             </div>
 
-            <Card className="p-6 mb-8 text-left">
-              <h3 className="text-lg font-semibold mb-4">
-                Performance Breakdown
-              </h3>
-              <div className="space-y-2">
+            <Card className="p-8 mb-10 text-left border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
+              <h3 className="text-2xl font-bold mb-6">Performance Breakdown</h3>
+              <div className="space-y-3">
                 {flashCards.slice(0, answers.length).map((card, index) => (
                   <div
                     key={card.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+                    className="flex items-center gap-3 p-4 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
                     {answers[index]?.correct ? (
-                      <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
                     ) : (
                       <XCircle className="h-5 w-5 text-destructive flex-shrink-0" />
                     )}
@@ -347,14 +366,18 @@ export default function FlashCardChallengePage() {
               </div>
             </Card>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button onClick={restartGame} className="flex-1">
+            <div className="flex flex-col sm:flex-row gap-5 justify-center">
+              <Button
+                onClick={restartGame}
+                size="lg"
+                className="text-base px-8 py-6 bg-yellow-600 hover:bg-yellow-700 text-white shadow-lg hover:shadow-xl transition-all">
                 Play Again
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="flex-1 bg-transparent">
+                size="lg"
+                className="text-base px-8 py-6 bg-background/50 backdrop-blur-sm border-2 hover:bg-background/80 transition-all">
                 <Link href="/">Back to Home</Link>
               </Button>
             </div>
@@ -367,14 +390,14 @@ export default function FlashCardChallengePage() {
   const currentCard = flashCards[currentCardIndex];
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-yellow-500/5">
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm">
+        <div className="container mx-auto px-4 py-5 flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
             <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm">Exit</span>
+            <span className="text-sm font-medium">Exit</span>
           </Link>
 
           <div className="flex items-center gap-6">
@@ -393,15 +416,16 @@ export default function FlashCardChallengePage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-6">
-            <div className="text-sm text-muted-foreground mb-2">
+      <main className="container mx-auto px-4 py-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/5 bg-[size:50px_50px] [mask-image:radial-gradient(white,transparent_85%)]\" />
+        <div className="max-w-2xl mx-auto relative">
+          <div className="text-center mb-8">
+            <div className="text-sm text-muted-foreground/80 mb-3 font-medium">
               Card {currentCardIndex + 1} of {flashCards.length}
             </div>
-            <div className="w-full bg-muted rounded-full h-2">
+            <div className="w-full bg-muted/40 rounded-full h-3 shadow-inner">
               <div
-                className="bg-primary h-2 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-yellow-500 to-orange-500 h-3 rounded-full transition-all duration-300 shadow-lg"
                 style={{
                   width: `${
                     ((currentCardIndex + 1) / flashCards.length) * 100
@@ -411,55 +435,60 @@ export default function FlashCardChallengePage() {
             </div>
           </div>
 
-          <Card className="p-8 mb-6">
-            <div className="text-center mb-8">
-              <p className="text-xl leading-relaxed">{currentCard.message}</p>
+          <Card className="p-10 mb-8 border-border/50 bg-card/50 backdrop-blur-sm shadow-2xl">
+            <div className="text-center mb-10">
+              <p className="text-2xl leading-relaxed font-medium">
+                {currentCard.message}
+              </p>
             </div>
 
             {!showResult ? (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
                 <Button
                   onClick={() => handleAnswer(true)}
                   size="lg"
                   variant="destructive"
-                  className="h-20 text-lg font-semibold">
+                  className="h-24 text-xl font-bold shadow-lg hover:shadow-xl transition-all">
                   SCAM
                 </Button>
                 <Button
                   onClick={() => handleAnswer(false)}
                   size="lg"
-                  className="h-20 text-lg font-semibold bg-primary hover:bg-primary/90">
+                  className="h-24 text-xl font-bold bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all">
                   SAFE
                 </Button>
               </div>
             ) : (
               <div>
-                <div className="text-center mb-6">
+                <div className="text-center mb-8">
                   {answers[answers.length - 1]?.correct ? (
-                    <div className="flex items-center justify-center gap-2 text-primary">
-                      <CheckCircle className="h-8 w-8" />
-                      <span className="text-2xl font-bold">Correct!</span>
+                    <div className="flex items-center justify-center gap-3 text-green-600">
+                      <CheckCircle className="h-10 w-10" />
+                      <span className="text-3xl font-bold">Correct!</span>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center gap-2 text-destructive">
-                      <XCircle className="h-8 w-8" />
-                      <span className="text-2xl font-bold">Incorrect</span>
+                    <div className="flex items-center justify-center gap-3 text-red-600">
+                      <XCircle className="h-10 w-10" />
+                      <span className="text-3xl font-bold">Incorrect</span>
                     </div>
                   )}
                 </div>
 
                 {showExplanation && (
-                  <div className="p-4 rounded-lg bg-muted/50 mb-6">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                  <div className="p-6 rounded-lg bg-muted/60 mb-8 border border-border/50">
+                    <p className="text-base text-muted-foreground/90 leading-relaxed">
                       {currentCard.explanation}
                     </p>
                   </div>
                 )}
 
-                <Button onClick={nextCard} className="w-full" size="lg">
+                <Button
+                  onClick={nextCard}
+                  className="w-full shadow-lg hover:shadow-xl transition-all"
+                  size="lg">
                   {currentCardIndex + 1 >= flashCards.length
-                    ? "See Results"
-                    : "Next Card"}
+                    ? "See Results →"
+                    : "Next Card →"}
                 </Button>
               </div>
             )}

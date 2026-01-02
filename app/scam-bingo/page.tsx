@@ -534,14 +534,14 @@ export default function ScamBingoPage() {
 
   if (!gameStarted) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-emerald-500/5">
+        <header className="border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm">
+          <div className="container mx-auto px-4 py-5">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
               <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">Back to Home</span>
+              <span className="text-sm font-medium">Back to Home</span>
             </Link>
           </div>
         </header>
@@ -629,14 +629,14 @@ export default function ScamBingoPage() {
     );
 
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-emerald-500/5">
+        <header className="border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm">
+          <div className="container mx-auto px-4 py-5">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
               <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">Back to Home</span>
+              <span className="text-sm font-medium">Back to Home</span>
             </Link>
           </div>
         </header>
@@ -730,14 +730,14 @@ export default function ScamBingoPage() {
   const correctFlags = new Set(scenario.redFlagsPresent);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-emerald-500/5">
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm">
+        <div className="container mx-auto px-4 py-5 flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
             <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm">Exit</span>
+            <span className="text-sm font-medium">Exit</span>
           </Link>
 
           <div className="flex items-center gap-6">
