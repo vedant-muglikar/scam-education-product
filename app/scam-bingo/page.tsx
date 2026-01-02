@@ -1,40 +1,81 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, Clock, Trophy } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, Clock, Trophy } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { saveScore } from "@/lib/score-actions";
 
 interface RedFlag {
-  id: string
-  label: string
-  description: string
+  id: string;
+  label: string;
+  description: string;
 }
 
 interface Scenario {
-  id: number
-  title: string
-  content: string
-  redFlagsPresent: string[]
-  isScam: boolean
+  id: number;
+  title: string;
+  content: string;
+  redFlagsPresent: string[];
+  isScam: boolean;
 }
 
 const redFlags: RedFlag[] = [
   { id: "urgency", label: "Urgency", description: "Act now or else..." },
-  { id: "too-good", label: "Too Good to Be True", description: "Unrealistic rewards" },
-  { id: "suspicious-link", label: "Suspicious Link", description: "Misspelled or odd URL" },
-  { id: "emotional", label: "Emotional Manipulation", description: "Fear, flattery, guilt" },
-  { id: "payment", label: "Payment Request", description: "Gift cards / crypto" },
-  { id: "unknown-sender", label: "Unknown Sender", description: "Not in contacts" },
+  {
+    id: "too-good",
+    label: "Too Good to Be True",
+    description: "Unrealistic rewards",
+  },
+  {
+    id: "suspicious-link",
+    label: "Suspicious Link",
+    description: "Misspelled or odd URL",
+  },
+  {
+    id: "emotional",
+    label: "Emotional Manipulation",
+    description: "Fear, flattery, guilt",
+  },
+  {
+    id: "payment",
+    label: "Payment Request",
+    description: "Gift cards / crypto",
+  },
+  {
+    id: "unknown-sender",
+    label: "Unknown Sender",
+    description: "Not in contacts",
+  },
   { id: "grammar", label: "Grammar Mistakes", description: "Poor language" },
-  { id: "fake-authority", label: "Fake Authority", description: "Pretending to be official" },
-  { id: "personal-info", label: "Personal Info Request", description: "SSN, passwords, etc." },
-  { id: "threats", label: "Threats", description: "Legal action or consequences" },
-  { id: "unsolicited", label: "Unsolicited Contact", description: "You didn't request this" },
-  { id: "requests-secrecy", label: "Requests Secrecy", description: "Don't tell anyone" },
-]
+  {
+    id: "fake-authority",
+    label: "Fake Authority",
+    description: "Pretending to be official",
+  },
+  {
+    id: "personal-info",
+    label: "Personal Info Request",
+    description: "SSN, passwords, etc.",
+  },
+  {
+    id: "threats",
+    label: "Threats",
+    description: "Legal action or consequences",
+  },
+  {
+    id: "unsolicited",
+    label: "Unsolicited Contact",
+    description: "You didn't request this",
+  },
+  {
+    id: "requests-secrecy",
+    label: "Requests Secrecy",
+    description: "Don't tell anyone",
+  },
+];
 
 const scenarios: Scenario[] = [
   {
@@ -60,7 +101,14 @@ Failure to comply will result in legal action and account termination.
 Best Regards,
 Bank Security Team
 Protect Your Account Now!`,
-    redFlagsPresent: ["urgency", "suspicious-link", "emotional", "fake-authority", "personal-info", "threats"],
+    redFlagsPresent: [
+      "urgency",
+      "suspicious-link",
+      "emotional",
+      "fake-authority",
+      "personal-info",
+      "threats",
+    ],
   },
   {
     id: 2,
@@ -109,7 +157,15 @@ But you need to hurry - only 50 spots left and they're going fast! I'd hate for 
 Don't tell anyone else about this - I want my friends to benefit first!
 
 Let me know when you get yours! 💰`,
-    redFlagsPresent: ["urgency", "too-good", "suspicious-link", "emotional", "payment", "grammar", "requests-secrecy"],
+    redFlagsPresent: [
+      "urgency",
+      "too-good",
+      "suspicious-link",
+      "emotional",
+      "payment",
+      "grammar",
+      "requests-secrecy",
+    ],
   },
   {
     id: 4,
@@ -199,113 +255,165 @@ Thanks for shopping with us!
 Legitimate Store Team`,
     redFlagsPresent: [],
   },
-]
+];
 
 export default function ScamBingoPage() {
-  const [currentScenario, setCurrentScenario] = useState(0)
-  const [selectedFlags, setSelectedFlags] = useState<Set<string>>(new Set())
-  const [gameStarted, setGameStarted] = useState(false)
-  const [timeElapsed, setTimeElapsed] = useState(0)
-  const [gameOver, setGameOver] = useState(false)
-  const [score, setScore] = useState(0)
-  const [scenarioResults, setScenarioResults] = useState<{ [key: string]: "correct" | "incorrect" | "missed" }[]>([])
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [selectedFlags, setSelectedFlags] = useState<Set<string>>(new Set());
+  const [gameStarted, setGameStarted] = useState(false);
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
+  const [score, setScore] = useState(0);
+  const [scenarioResults, setScenarioResults] = useState<
+    { [key: string]: "correct" | "incorrect" | "missed" }[]
+  >([]);
+  const [scoreSaved, setScoreSaved] = useState(false);
 
   useEffect(() => {
-    if (!gameStarted || gameOver) return
+    if (!gameStarted || gameOver) return;
 
     const timer = setInterval(() => {
-      setTimeElapsed((prev) => prev + 1)
-    }, 1000)
+      setTimeElapsed((prev) => prev + 1);
+    }, 1000);
 
-    return () => clearInterval(timer)
-  }, [gameStarted, gameOver])
+    return () => clearInterval(timer);
+  }, [gameStarted, gameOver]);
 
   const startGame = () => {
-    setGameStarted(true)
-    setCurrentScenario(0)
-    setSelectedFlags(new Set())
-    setTimeElapsed(0)
-    setGameOver(false)
-    setScore(0)
-    setScenarioResults([])
-  }
+    setGameStarted(true);
+    setCurrentScenario(0);
+    setSelectedFlags(new Set());
+    setTimeElapsed(0);
+    setGameOver(false);
+    setScore(0);
+    setScenarioResults([]);
+    setScoreSaved(false);
+  };
 
   const toggleFlag = (flagId: string) => {
-    const newSelected = new Set(selectedFlags)
+    const newSelected = new Set(selectedFlags);
     if (newSelected.has(flagId)) {
-      newSelected.delete(flagId)
+      newSelected.delete(flagId);
     } else {
-      newSelected.add(flagId)
+      newSelected.add(flagId);
     }
-    setSelectedFlags(newSelected)
-  }
+    setSelectedFlags(newSelected);
+  };
 
   const submitBingo = () => {
-    const scenario = scenarios[currentScenario]
-    const correctFlags = new Set(scenario.redFlagsPresent)
-    const selected = selectedFlags
+    const scenario = scenarios[currentScenario];
+    const correctFlags = new Set(scenario.redFlagsPresent);
+    const selected = selectedFlags;
 
-    const flagResults: { [key: string]: "correct" | "incorrect" | "missed" } = {}
+    const flagResults: { [key: string]: "correct" | "incorrect" | "missed" } =
+      {};
 
-    let correct = 0
-    let incorrect = 0
+    let correct = 0;
+    let incorrect = 0;
 
     selected.forEach((flag) => {
       if (correctFlags.has(flag)) {
-        correct++
-        flagResults[flag] = "correct"
+        correct++;
+        flagResults[flag] = "correct";
       } else {
-        incorrect++
-        flagResults[flag] = "incorrect"
+        incorrect++;
+        flagResults[flag] = "incorrect";
       }
-    })
+    });
 
     correctFlags.forEach((flag) => {
       if (!selected.has(flag)) {
-        flagResults[flag] = "missed"
+        flagResults[flag] = "missed";
       }
-    })
+    });
 
-    const missed = correctFlags.size - correct
+    const missed = correctFlags.size - correct;
 
-    const roundScore = Math.max(0, correct * 10 - incorrect * 5 - missed * 3)
-    setScore(score + roundScore)
+    const roundScore = Math.max(0, correct * 10 - incorrect * 5 - missed * 3);
+    setScore(score + roundScore);
 
-    setScenarioResults([...scenarioResults, flagResults])
+    setScenarioResults([...scenarioResults, flagResults]);
 
     if (currentScenario + 1 >= scenarios.length) {
-      setGameOver(true)
+      setGameOver(true);
     } else {
-      setCurrentScenario(currentScenario + 1)
-      setSelectedFlags(new Set())
+      setCurrentScenario(currentScenario + 1);
+      setSelectedFlags(new Set());
     }
-  }
+  };
 
   const restartGame = () => {
-    setGameStarted(false)
-    setCurrentScenario(0)
-    setSelectedFlags(new Set())
-    setTimeElapsed(0)
-    setGameOver(false)
-    setScore(0)
-    setScenarioResults([])
-  }
+    setGameStarted(false);
+    setCurrentScenario(0);
+    setSelectedFlags(new Set());
+    setTimeElapsed(0);
+    setGameOver(false);
+    setScore(0);
+    setScenarioResults([]);
+    setScoreSaved(false);
+  };
+
+  // Save score when game ends
+  useEffect(() => {
+    if (gameOver && !scoreSaved) {
+      const maxPossibleScore = scenarios.length * 10 * 12;
+      const accuracy = Math.min(
+        100,
+        Math.round((score / maxPossibleScore) * 100)
+      );
+
+      // Calculate total correct, incorrect, and missed flags
+      let totalCorrect = 0;
+      let totalIncorrect = 0;
+      let totalMissed = 0;
+
+      scenarioResults.forEach((result) => {
+        Object.values(result).forEach((status) => {
+          if (status === "correct") totalCorrect++;
+          else if (status === "incorrect") totalIncorrect++;
+          else if (status === "missed") totalMissed++;
+        });
+      });
+
+      saveScore({
+        game_type: "scam-bingo",
+        score: score,
+        accuracy: accuracy,
+        time_taken: timeElapsed,
+        metadata: {
+          scenarios_completed: scenarios.length,
+          total_correct: totalCorrect,
+          total_incorrect: totalIncorrect,
+          total_missed: totalMissed,
+        },
+      }).then((result) => {
+        if (result.success) {
+          console.log("Score saved successfully");
+          setScoreSaved(true);
+        } else {
+          console.error("Failed to save score:", result.error);
+        }
+      });
+    }
+  }, [gameOver, scoreSaved, score, timeElapsed, scenarioResults]);
 
   const getFlagStatus = (flagId: string) => {
     for (const result of scenarioResults) {
       if (result[flagId]) {
-        return result[flagId]
+        return result[flagId];
       }
     }
-    return null
-  }
+    return null;
+  };
 
   if (!gameStarted) {
     return (
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm">Back to Home</span>
             </Link>
@@ -317,7 +425,8 @@ export default function ScamBingoPage() {
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold mb-4">Red Flag Hunter</h1>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Read detailed scam scenarios and identify all the red flags present. Mark them on your board!
+                Read detailed scam scenarios and identify all the red flags
+                present. Mark them on your board!
               </p>
             </div>
 
@@ -326,19 +435,27 @@ export default function ScamBingoPage() {
               <ul className="space-y-3 text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>Read each scenario carefully looking for scam red flags</span>
+                  <span>
+                    Read each scenario carefully looking for scam red flags
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>Click on red flag cards that you spot in the scenario</span>
+                  <span>
+                    Click on red flag cards that you spot in the scenario
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>Complete all scenarios to see your total detection score</span>
+                  <span>
+                    Complete all scenarios to see your total detection score
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>Faster completion with high accuracy earns bonus points</span>
+                  <span>
+                    Faster completion with high accuracy earns bonus points
+                  </span>
                 </li>
               </ul>
             </Card>
@@ -348,8 +465,12 @@ export default function ScamBingoPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {redFlags.map((flag) => (
                   <Card key={flag.id} className="p-4">
-                    <div className="font-semibold text-xs mb-1">{flag.label}</div>
-                    <div className="text-xs text-muted-foreground">{flag.description}</div>
+                    <div className="font-semibold text-xs mb-1">
+                      {flag.label}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {flag.description}
+                    </div>
                   </Card>
                 ))}
               </div>
@@ -363,18 +484,23 @@ export default function ScamBingoPage() {
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   if (gameOver) {
-    const maxPossibleScore = scenarios.length * 10 * 12
-    const performancePercent = Math.min(100, Math.round((score / maxPossibleScore) * 100))
+    const maxPossibleScore = scenarios.length * 10 * 12;
+    const performancePercent = Math.min(
+      100,
+      Math.round((score / maxPossibleScore) * 100)
+    );
 
     return (
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm">Back to Home</span>
             </Link>
@@ -387,21 +513,28 @@ export default function ScamBingoPage() {
               <Trophy className="h-10 w-10 text-accent-foreground" />
             </div>
             <h2 className="text-4xl font-bold mb-4">Hunt Complete!</h2>
-            <p className="text-lg text-muted-foreground mb-8">You've analyzed all scenarios</p>
+            <p className="text-lg text-muted-foreground mb-8">
+              You've analyzed all scenarios
+            </p>
 
             <div className="grid grid-cols-3 gap-4 mb-8">
               <Card className="p-6">
-                <div className="text-3xl font-bold text-primary mb-2">{score}</div>
+                <div className="text-3xl font-bold text-primary mb-2">
+                  {score}
+                </div>
                 <div className="text-sm text-muted-foreground">Total Score</div>
               </Card>
               <Card className="p-6">
                 <div className="text-3xl font-bold text-primary mb-2">
-                  {Math.floor(timeElapsed / 60)}:{(timeElapsed % 60).toString().padStart(2, "0")}
+                  {Math.floor(timeElapsed / 60)}:
+                  {(timeElapsed % 60).toString().padStart(2, "0")}
                 </div>
                 <div className="text-sm text-muted-foreground">Time Taken</div>
               </Card>
               <Card className="p-6">
-                <div className="text-3xl font-bold text-primary mb-2">{scenarios.length}</div>
+                <div className="text-3xl font-bold text-primary mb-2">
+                  {scenarios.length}
+                </div>
                 <div className="text-sm text-muted-foreground">Scenarios</div>
               </Card>
             </div>
@@ -411,7 +544,9 @@ export default function ScamBingoPage() {
               <div className="space-y-4 text-left">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">Detection Skills</span>
+                    <span className="text-muted-foreground">
+                      Detection Skills
+                    </span>
                     <span className="font-semibold">{performancePercent}%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
@@ -425,8 +560,8 @@ export default function ScamBingoPage() {
                   {performancePercent >= 80
                     ? "Excellent! You have a strong ability to identify scam red flags."
                     : performancePercent >= 60
-                      ? "Good work! Keep practicing to improve your scam detection skills."
-                      : "Keep learning! Review the scenarios to better recognize red flags."}
+                    ? "Good work! Keep practicing to improve your scam detection skills."
+                    : "Keep learning! Review the scenarios to better recognize red flags."}
                 </p>
               </div>
             </Card>
@@ -435,24 +570,29 @@ export default function ScamBingoPage() {
               <Button onClick={restartGame} className="flex-1">
                 Play Again
               </Button>
-              <Button asChild variant="outline" className="flex-1 bg-transparent">
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 bg-transparent">
                 <Link href="/">Back to Home</Link>
               </Button>
             </div>
           </div>
         </main>
       </div>
-    )
+    );
   }
 
-  const scenario = scenarios[currentScenario]
-  const correctFlags = new Set(scenario.redFlagsPresent)
+  const scenario = scenarios[currentScenario];
+  const correctFlags = new Set(scenario.redFlagsPresent);
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm">Exit</span>
           </Link>
@@ -461,7 +601,8 @@ export default function ScamBingoPage() {
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="font-mono text-lg font-semibold">
-                {Math.floor(timeElapsed / 60)}:{(timeElapsed % 60).toString().padStart(2, "0")}
+                {Math.floor(timeElapsed / 60)}:
+                {(timeElapsed % 60).toString().padStart(2, "0")}
               </span>
             </div>
             <div className="font-mono text-lg font-semibold">{score} pts</div>
@@ -480,9 +621,10 @@ export default function ScamBingoPage() {
               <span
                 className={cn(
                   "ml-3 text-sm px-2 py-1 rounded-md",
-                  scenario.isScam ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500",
-                )}
-              >
+                  scenario.isScam
+                    ? "bg-red-500/10 text-red-500"
+                    : "bg-green-500/10 text-green-500"
+                )}>
                 {scenario.isScam ? "Scam" : "Safe"}
               </span>
             </h2>
@@ -505,10 +647,12 @@ export default function ScamBingoPage() {
 
             <div>
               <Card className="p-6 mb-6">
-                <h3 className="text-lg font-semibold mb-4">Spot the Red Flags</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Spot the Red Flags
+                </h3>
                 <div className="grid grid-cols-4 gap-3">
                   {redFlags.map((flag) => {
-                    const flagStatus = getFlagStatus(flag.id)
+                    const flagStatus = getFlagStatus(flag.id);
                     return (
                       <button
                         key={flag.id}
@@ -518,22 +662,23 @@ export default function ScamBingoPage() {
                           selectedFlags.has(flag.id)
                             ? "border-primary bg-primary/10"
                             : "border-border bg-card hover:border-primary/50",
-                          flagStatus && "pointer-events-none",
-                        )}
-                      >
-                        <div className="font-semibold text-xs text-center mb-1">{flag.label}</div>
+                          flagStatus && "pointer-events-none"
+                        )}>
+                        <div className="font-semibold text-xs text-center mb-1">
+                          {flag.label}
+                        </div>
                         {flagStatus && (
                           <div
                             className={cn(
                               "absolute bottom-1 right-1 w-3 h-3 rounded-full",
                               flagStatus === "correct" && "bg-green-500",
                               flagStatus === "incorrect" && "bg-red-500",
-                              flagStatus === "missed" && "bg-yellow-500",
+                              flagStatus === "missed" && "bg-yellow-500"
                             )}
                           />
                         )}
                       </button>
-                    )
+                    );
                   })}
                 </div>
                 <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
@@ -553,12 +698,14 @@ export default function ScamBingoPage() {
               </Card>
 
               <Button onClick={submitBingo} className="w-full" size="lg">
-                {currentScenario + 1 < scenarios.length ? "Next Scenario" : "Finish Hunt"}
+                {currentScenario + 1 < scenarios.length
+                  ? "Next Scenario"
+                  : "Finish Hunt"}
               </Button>
             </div>
           </div>
         </div>
       </main>
     </div>
-  )
+  );
 }

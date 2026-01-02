@@ -1,22 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, AlertTriangle, CheckCircle } from "lucide-react"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, AlertTriangle, CheckCircle } from "lucide-react";
+import { saveScore } from "@/lib/score-actions";
 
 interface StoryNode {
-  id: string
-  text: string
+  id: string;
+  text: string;
   options: Array<{
-    text: string
-    nextId: string
-  }>
-  isEnding?: boolean
-  scamType?: string
-  redFlags?: string[]
-  tips?: string[]
+    text: string;
+    nextId: string;
+  }>;
+  isEnding?: boolean;
+  scamType?: string;
+  redFlags?: string[];
+  tips?: string[];
 }
 
 const storyData: Record<string, StoryNode> = {
@@ -25,7 +26,10 @@ const storyData: Record<string, StoryNode> = {
     text: "You receive a message on your phone: 'Congratulations! You've been selected as a winner of the Digital Citizenship Award! Click here to claim your $500 prize.' What do you do?",
     options: [
       { text: "Click the link to see what it's about", nextId: "click-link" },
-      { text: "Check if the website is legitimate first", nextId: "check-website" },
+      {
+        text: "Check if the website is legitimate first",
+        nextId: "check-website",
+      },
       { text: "Contact the support agent mentioned", nextId: "contact-agent" },
       { text: "Ignore it completely", nextId: "ignore" },
     ],
@@ -59,7 +63,10 @@ const storyData: Record<string, StoryNode> = {
     text: "Smart choice to be cautious! However, three days later, you receive a follow-up message: 'URGENT: Your Digital Citizenship Award will be forfeited. You have 24 hours to claim or face legal action for prize abandonment.' Your friend also messages saying they saw your name on the winners list.",
     options: [
       { text: "Check with my friend about it", nextId: "friend-confirms" },
-      { text: "Ignore the threat - it's still suspicious", nextId: "final-ignore" },
+      {
+        text: "Ignore the threat - it's still suspicious",
+        nextId: "final-ignore",
+      },
     ],
   },
   "enter-details": {
@@ -120,7 +127,11 @@ const storyData: Record<string, StoryNode> = {
     text: "Excellent observation! The misspelled URL is a classic scam technique called 'typosquatting.' You've successfully identified the scam before falling victim!",
     isEnding: true,
     scamType: "Scam Avoided - Typosquatting Detected",
-    redFlags: ["Misspelled domain name", "Unsolicited prize offer", "Fake official-looking website design"],
+    redFlags: [
+      "Misspelled domain name",
+      "Unsolicited prize offer",
+      "Fake official-looking website design",
+    ],
     tips: [
       "Always verify URLs letter by letter",
       "Scammers often buy domains similar to legitimate ones",
@@ -150,8 +161,14 @@ const storyData: Record<string, StoryNode> = {
     id: "question-agent",
     text: "The agent gets defensive: 'This is standard procedure. If you don't trust us, we'll give your prize to the next person.' This pressure tactic is suspicious, but they sound convincing. What do you do?",
     options: [
-      { text: "Give them the information to avoid losing out", nextId: "give-in-pressure" },
-      { text: "End the conversation - this is a red flag", nextId: "end-conversation" },
+      {
+        text: "Give them the information to avoid losing out",
+        nextId: "give-in-pressure",
+      },
+      {
+        text: "End the conversation - this is a red flag",
+        nextId: "end-conversation",
+      },
     ],
   },
   "friend-confirms": {
@@ -225,32 +242,68 @@ const storyData: Record<string, StoryNode> = {
       "You can always verify later if the offer is real",
     ],
   },
-}
+};
 
 export default function StoryAdventurePage() {
-  const [currentNodeId, setCurrentNodeId] = useState("start")
-  const [showResults, setShowResults] = useState(false)
+  const [currentNodeId, setCurrentNodeId] = useState("start");
+  const [showResults, setShowResults] = useState(false);
+  const [scoreSaved, setScoreSaved] = useState(false);
+  const [choiceCount, setChoiceCount] = useState(0);
 
-  const currentNode = storyData[currentNodeId]
+  const currentNode = storyData[currentNodeId];
 
   const handleChoice = (nextId: string) => {
-    setCurrentNodeId(nextId)
+    setCurrentNodeId(nextId);
+    setChoiceCount(choiceCount + 1);
     if (storyData[nextId].isEnding) {
-      setShowResults(true)
+      setShowResults(true);
     }
-  }
+  };
 
   const handleRestart = () => {
-    setCurrentNodeId("start")
-    setShowResults(false)
-  }
+    setCurrentNodeId("start");
+    setShowResults(false);
+    setScoreSaved(false);
+    setChoiceCount(0);
+  };
+
+  // Save result when scenario ends
+  useEffect(() => {
+    if (showResults && currentNode.isEnding && !scoreSaved) {
+      const scamAvoided =
+        currentNode.scamType?.includes("Avoided") ||
+        currentNode.scamType?.includes("Resisted");
+      const scoreValue = scamAvoided ? 100 : 0;
+
+      saveScore({
+        game_type: "story-adventure",
+        score: scoreValue,
+        metadata: {
+          scam_avoided: scamAvoided,
+          scam_type: currentNode.scamType,
+          choices_made: choiceCount,
+          ending_node: currentNodeId,
+          red_flags_count: currentNode.redFlags?.length || 0,
+        },
+      }).then((result) => {
+        if (result.success) {
+          console.log("Story result saved successfully");
+          setScoreSaved(true);
+        } else {
+          console.error("Failed to save story result:", result.error);
+        }
+      });
+    }
+  }, [showResults, currentNode, scoreSaved, currentNodeId, choiceCount]);
 
   if (showResults && currentNode.isEnding) {
     return (
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm">Back to Home</span>
             </Link>
@@ -268,7 +321,9 @@ export default function StoryAdventurePage() {
                 )}
               </div>
               <h2 className="text-3xl font-bold mb-2">Scenario Complete</h2>
-              <p className="text-xl text-muted-foreground">{currentNode.scamType}</p>
+              <p className="text-xl text-muted-foreground">
+                {currentNode.scamType}
+              </p>
             </div>
 
             <Card className="p-6 mb-6">
@@ -305,21 +360,26 @@ export default function StoryAdventurePage() {
               <Button onClick={handleRestart} className="flex-1">
                 Try Another Path
               </Button>
-              <Button asChild variant="outline" className="flex-1 bg-transparent">
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 bg-transparent">
                 <Link href="/">Back to Home</Link>
               </Button>
             </div>
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm">Back to Home</span>
           </Link>
@@ -329,8 +389,12 @@ export default function StoryAdventurePage() {
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Story Adventure</h1>
-            <p className="text-muted-foreground">Navigate the scenario and see how different choices lead to scams</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">
+              Story Adventure
+            </h1>
+            <p className="text-muted-foreground">
+              Navigate the scenario and see how different choices lead to scams
+            </p>
           </div>
 
           <Card className="p-8 mb-6">
@@ -342,9 +406,10 @@ export default function StoryAdventurePage() {
                   key={index}
                   onClick={() => handleChoice(option.nextId)}
                   variant="outline"
-                  className="w-full text-left justify-start h-auto py-4 px-6"
-                >
-                  <span className="font-medium mr-3 text-primary">{String.fromCharCode(65 + index)}.</span>
+                  className="w-full text-left justify-start h-auto py-4 px-6">
+                  <span className="font-medium mr-3 text-primary">
+                    {String.fromCharCode(65 + index)}.
+                  </span>
                   <span>{option.text}</span>
                 </Button>
               ))}
@@ -357,5 +422,5 @@ export default function StoryAdventurePage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

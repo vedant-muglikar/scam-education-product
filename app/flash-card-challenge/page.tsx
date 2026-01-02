@@ -1,173 +1,227 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, CheckCircle, XCircle, Trophy, Clock, Zap } from "lucide-react"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  Trophy,
+  Clock,
+  Zap,
+} from "lucide-react";
+import { saveScore } from "@/lib/score-actions";
 
 interface FlashCard {
-  id: number
-  message: string
-  isScam: boolean
-  explanation: string
+  id: number;
+  message: string;
+  isScam: boolean;
+  explanation: string;
 }
 
 const flashCards: FlashCard[] = [
   {
     id: 1,
-    message: "Congrats! You've won a gift card. Just verify your bank details to claim.",
+    message:
+      "Congrats! You've won a gift card. Just verify your bank details to claim.",
     isScam: true,
     explanation:
       "Requests for bank details to claim a prize is a major red flag. Legitimate prizes never require financial information.",
   },
   {
     id: 2,
-    message: "Your school portal requires password reset through the official app at school.edu/reset",
+    message:
+      "Your school portal requires password reset through the official app at school.edu/reset",
     isScam: false,
     explanation:
       "If the domain is correct (.edu for schools) and you initiated the reset, this is likely safe. Always verify the URL.",
   },
   {
     id: 3,
-    message: "URGENT! Your account will be suspended in 24 hours. Click here immediately!",
+    message:
+      "URGENT! Your account will be suspended in 24 hours. Click here immediately!",
     isScam: true,
     explanation:
       "Urgency tactics and threats of account suspension are classic phishing techniques designed to make you act without thinking.",
   },
   {
     id: 4,
-    message: "Hi! It's Sarah from math class. Can you help me with homework? Here's the assignment link.",
+    message:
+      "Hi! It's Sarah from math class. Can you help me with homework? Here's the assignment link.",
     isScam: true,
-    explanation: "Even if it seems like someone you know, verify through another channel. Accounts can be compromised.",
+    explanation:
+      "Even if it seems like someone you know, verify through another channel. Accounts can be compromised.",
   },
   {
     id: 5,
-    message: "Your package delivery requires a $2 customs fee. Track your package here: [legitimate courier site]",
+    message:
+      "Your package delivery requires a $2 customs fee. Track your package here: [legitimate courier site]",
     isScam: false,
     explanation:
       "If the link goes to a legitimate, verified courier website, small customs fees are normal for international packages.",
   },
   {
     id: 6,
-    message: "You're pre-approved for a credit card! No credit check needed, just send us your SSN.",
+    message:
+      "You're pre-approved for a credit card! No credit check needed, just send us your SSN.",
     isScam: true,
     explanation:
       "Legitimate financial institutions never ask for SSN via unsolicited messages. This is identity theft bait.",
   },
   {
     id: 7,
-    message: "Your subscription to Netflix will renew tomorrow. Manage subscriptions in your account settings.",
+    message:
+      "Your subscription to Netflix will renew tomorrow. Manage subscriptions in your account settings.",
     isScam: false,
     explanation:
       "Standard renewal notifications that don't ask for information or pressure you to click suspicious links are typically legitimate.",
   },
   {
     id: 8,
-    message: "You've been selected for a survey! Earn $500 for 5 minutes of your time.",
+    message:
+      "You've been selected for a survey! Earn $500 for 5 minutes of your time.",
     isScam: true,
     explanation:
       "Unrealistic compensation for minimal effort is too good to be true. Legitimate surveys pay much less.",
   },
   {
     id: 9,
-    message: "Final notice: Your tax refund of $1,247 is waiting. Download form to claim.",
+    message:
+      "Final notice: Your tax refund of $1,247 is waiting. Download form to claim.",
     isScam: true,
     explanation:
       "Tax agencies contact you through official mail, not unsolicited messages. They never ask you to download forms from messages.",
   },
   {
     id: 10,
-    message: "Password reset requested. If this wasn't you, ignore this email. Link expires in 1 hour.",
+    message:
+      "Password reset requested. If this wasn't you, ignore this email. Link expires in 1 hour.",
     isScam: false,
     explanation:
       "Legitimate password reset emails include expiration times and don't pressure you if you didn't request it.",
   },
-]
+];
 
 export default function FlashCardChallengePage() {
-  const [currentCardIndex, setCurrentCardIndex] = useState(0)
-  const [score, setScore] = useState(0)
-  const [streak, setStreak] = useState(0)
-  const [answers, setAnswers] = useState<Array<{ correct: boolean; choice: boolean }>>([])
-  const [showResult, setShowResult] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(60)
-  const [isActive, setIsActive] = useState(false)
-  const [gameOver, setGameOver] = useState(false)
-  const [showExplanation, setShowExplanation] = useState(false)
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [answers, setAnswers] = useState<
+    Array<{ correct: boolean; choice: boolean }>
+  >([]);
+  const [showResult, setShowResult] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isActive, setIsActive] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [scoreSaved, setScoreSaved] = useState(false);
 
   useEffect(() => {
-    if (!isActive || gameOver) return
+    if (!isActive || gameOver) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          setGameOver(true)
-          return 0
+          setGameOver(true);
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearInterval(timer)
-  }, [isActive, gameOver])
+    return () => clearInterval(timer);
+  }, [isActive, gameOver]);
 
   const startGame = () => {
-    setIsActive(true)
-    setCurrentCardIndex(0)
-    setScore(0)
-    setStreak(0)
-    setAnswers([])
-    setTimeLeft(60)
-    setGameOver(false)
-  }
+    setIsActive(true);
+    setCurrentCardIndex(0);
+    setScore(0);
+    setStreak(0);
+    setAnswers([]);
+    setTimeLeft(60);
+    setGameOver(false);
+    setScoreSaved(false);
+  };
 
   const handleAnswer = (userAnswer: boolean) => {
-    const currentCard = flashCards[currentCardIndex]
-    const isCorrect = userAnswer === currentCard.isScam
+    const currentCard = flashCards[currentCardIndex];
+    const isCorrect = userAnswer === currentCard.isScam;
 
-    setAnswers([...answers, { correct: isCorrect, choice: userAnswer }])
+    setAnswers([...answers, { correct: isCorrect, choice: userAnswer }]);
 
     if (isCorrect) {
-      setScore(score + 10 + streak * 2)
-      setStreak(streak + 1)
+      setScore(score + 10 + streak * 2);
+      setStreak(streak + 1);
     } else {
-      setStreak(0)
+      setStreak(0);
     }
 
-    setShowResult(true)
-    setShowExplanation(true)
-  }
+    setShowResult(true);
+    setShowExplanation(true);
+  };
 
   const nextCard = () => {
-    setShowResult(false)
-    setShowExplanation(false)
+    setShowResult(false);
+    setShowExplanation(false);
 
     if (currentCardIndex + 1 >= flashCards.length) {
-      setGameOver(true)
+      setGameOver(true);
     } else {
-      setCurrentCardIndex(currentCardIndex + 1)
+      setCurrentCardIndex(currentCardIndex + 1);
     }
-  }
+  };
 
   const restartGame = () => {
-    setCurrentCardIndex(0)
-    setScore(0)
-    setStreak(0)
-    setAnswers([])
-    setShowResult(false)
-    setTimeLeft(60)
-    setIsActive(false)
-    setGameOver(false)
-    setShowExplanation(false)
-  }
+    setCurrentCardIndex(0);
+    setScore(0);
+    setStreak(0);
+    setAnswers([]);
+    setShowResult(false);
+    setTimeLeft(60);
+    setIsActive(false);
+    setGameOver(false);
+    setShowExplanation(false);
+    setScoreSaved(false);
+  };
+
+  // Save score when game ends
+  useEffect(() => {
+    if (gameOver && !scoreSaved && answers.length > 0) {
+      const accuracy = Math.round(
+        (answers.filter((a) => a.correct).length / answers.length) * 100
+      );
+
+      saveScore({
+        game_type: "flash-card",
+        score: score,
+        accuracy: accuracy,
+        time_taken: 60 - timeLeft,
+        metadata: {
+          total_cards: answers.length,
+          correct: answers.filter((a) => a.correct).length,
+          incorrect: answers.filter((a) => !a.correct).length,
+        },
+      }).then((result) => {
+        if (result.success) {
+          console.log("Score saved successfully");
+          setScoreSaved(true);
+        } else {
+          console.error("Failed to save score:", result.error);
+        }
+      });
+    }
+  }, [gameOver, scoreSaved, score, answers, timeLeft]);
 
   if (!isActive && !gameOver) {
     return (
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm">Back to Home</span>
             </Link>
@@ -181,8 +235,9 @@ export default function FlashCardChallengePage() {
             </div>
             <h1 className="text-4xl font-bold mb-4">Flash-Card Challenge</h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              Test your scam detection skills! You'll see {flashCards.length} messages. Quickly decide if each one is a
-              SCAM or SAFE. Race against time to build your streak!
+              Test your scam detection skills! You'll see {flashCards.length}{" "}
+              messages. Quickly decide if each one is a SCAM or SAFE. Race
+              against time to build your streak!
             </p>
 
             <Card className="p-8 mb-8">
@@ -190,7 +245,9 @@ export default function FlashCardChallengePage() {
               <ul className="text-left space-y-3 text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>You have 60 seconds to categorize as many cards as possible</span>
+                  <span>
+                    You have 60 seconds to categorize as many cards as possible
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
@@ -213,18 +270,24 @@ export default function FlashCardChallengePage() {
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   if (gameOver) {
     const accuracy =
-      answers.length > 0 ? Math.round((answers.filter((a) => a.correct).length / answers.length) * 100) : 0
+      answers.length > 0
+        ? Math.round(
+            (answers.filter((a) => a.correct).length / answers.length) * 100
+          )
+        : 0;
 
     return (
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm">Back to Home</span>
             </Link>
@@ -237,15 +300,21 @@ export default function FlashCardChallengePage() {
               <Trophy className="h-10 w-10 text-secondary-foreground" />
             </div>
             <h2 className="text-4xl font-bold mb-4">Challenge Complete!</h2>
-            <p className="text-lg text-muted-foreground mb-8">Here's how you performed</p>
+            <p className="text-lg text-muted-foreground mb-8">
+              Here's how you performed
+            </p>
 
             <div className="grid grid-cols-3 gap-4 mb-8">
               <Card className="p-6">
-                <div className="text-3xl font-bold text-primary mb-2">{score}</div>
+                <div className="text-3xl font-bold text-primary mb-2">
+                  {score}
+                </div>
                 <div className="text-sm text-muted-foreground">Total Score</div>
               </Card>
               <Card className="p-6">
-                <div className="text-3xl font-bold text-primary mb-2">{accuracy}%</div>
+                <div className="text-3xl font-bold text-primary mb-2">
+                  {accuracy}%
+                </div>
                 <div className="text-sm text-muted-foreground">Accuracy</div>
               </Card>
               <Card className="p-6">
@@ -257,10 +326,14 @@ export default function FlashCardChallengePage() {
             </div>
 
             <Card className="p-6 mb-8 text-left">
-              <h3 className="text-lg font-semibold mb-4">Performance Breakdown</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Performance Breakdown
+              </h3>
               <div className="space-y-2">
                 {flashCards.slice(0, answers.length).map((card, index) => (
-                  <div key={card.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+                  <div
+                    key={card.id}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                     {answers[index]?.correct ? (
                       <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                     ) : (
@@ -278,23 +351,28 @@ export default function FlashCardChallengePage() {
               <Button onClick={restartGame} className="flex-1">
                 Play Again
               </Button>
-              <Button asChild variant="outline" className="flex-1 bg-transparent">
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 bg-transparent">
                 <Link href="/">Back to Home</Link>
               </Button>
             </div>
           </div>
         </main>
       </div>
-    )
+    );
   }
 
-  const currentCard = flashCards[currentCardIndex]
+  const currentCard = flashCards[currentCardIndex];
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm">Exit</span>
           </Link>
@@ -302,7 +380,9 @@ export default function FlashCardChallengePage() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="font-mono text-lg font-semibold">{timeLeft}s</span>
+              <span className="font-mono text-lg font-semibold">
+                {timeLeft}s
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-secondary-foreground" />
@@ -322,7 +402,11 @@ export default function FlashCardChallengePage() {
             <div className="w-full bg-muted rounded-full h-2">
               <div
                 className="bg-primary h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((currentCardIndex + 1) / flashCards.length) * 100}%` }}
+                style={{
+                  width: `${
+                    ((currentCardIndex + 1) / flashCards.length) * 100
+                  }%`,
+                }}
               />
             </div>
           </div>
@@ -338,15 +422,13 @@ export default function FlashCardChallengePage() {
                   onClick={() => handleAnswer(true)}
                   size="lg"
                   variant="destructive"
-                  className="h-20 text-lg font-semibold"
-                >
+                  className="h-20 text-lg font-semibold">
                   SCAM
                 </Button>
                 <Button
                   onClick={() => handleAnswer(false)}
                   size="lg"
-                  className="h-20 text-lg font-semibold bg-primary hover:bg-primary/90"
-                >
+                  className="h-20 text-lg font-semibold bg-primary hover:bg-primary/90">
                   SAFE
                 </Button>
               </div>
@@ -368,12 +450,16 @@ export default function FlashCardChallengePage() {
 
                 {showExplanation && (
                   <div className="p-4 rounded-lg bg-muted/50 mb-6">
-                    <p className="text-sm text-muted-foreground leading-relaxed">{currentCard.explanation}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {currentCard.explanation}
+                    </p>
                   </div>
                 )}
 
                 <Button onClick={nextCard} className="w-full" size="lg">
-                  {currentCardIndex + 1 >= flashCards.length ? "See Results" : "Next Card"}
+                  {currentCardIndex + 1 >= flashCards.length
+                    ? "See Results"
+                    : "Next Card"}
                 </Button>
               </div>
             )}
@@ -381,5 +467,5 @@ export default function FlashCardChallengePage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
