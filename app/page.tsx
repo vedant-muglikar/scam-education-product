@@ -24,7 +24,11 @@ export default async function HomePage() {
         <div className="container mx-auto px-4 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3 group cursor-pointer">
             <div className="relative">
-              <Shield className="h-9 w-9 text-primary transition-transform group-hover:scale-110" />
+              <img
+                src="/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png"
+                alt="ScamSmart Logo"
+                className="h-16 w-20 transition-transform group-hover:scale-110"
+              />
               <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
@@ -64,7 +68,11 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-grid-white/5 bg-[size:50px_50px] [mask-image:radial-gradient(white,transparent_85%)]" />
         <div className="max-w-5xl mx-auto text-center relative">
           <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/15 to-primary/5 border border-primary/20 text-primary text-sm font-semibold mb-8 shadow-lg hover:shadow-primary/20 transition-all">
-            <Shield className="h-4 w-4" />
+            <img
+              src="/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png"
+              alt="ScamSmart Logo"
+              className="h-16 w-20 transition-transform group-hover:scale-110"
+            />
             <span>Interactive Learning Platform</span>
           </div>
           <h2 className="text-5xl md:text-7xl font-extrabold mb-8 text-balance leading-[1.1] tracking-tight">
@@ -240,7 +248,11 @@ export default async function HomePage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Shield className="h-6 w-6 text-primary" />
+            <img
+              src="/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png"
+              alt="ScamSmart Logo"
+              className="h-16 w-20 transition-transform group-hover:scale-110"
+            />
             <span className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
               ScamSmart
             </span>
