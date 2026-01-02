@@ -14,11 +14,18 @@ interface RedFlag {
   description: string;
 }
 
+interface SafeIndicator {
+  id: string;
+  label: string;
+  description: string;
+}
+
 interface Scenario {
   id: number;
   title: string;
   content: string;
   redFlagsPresent: string[];
+  safeIndicatorsPresent: string[];
   isScam: boolean;
 }
 
@@ -77,6 +84,69 @@ const redFlags: RedFlag[] = [
   },
 ];
 
+const greenFlags: SafeIndicator[] = [
+  {
+    id: "verified-sender",
+    label: "Verified Sender",
+    description: "Known legitimate source",
+  },
+  {
+    id: "official-domain",
+    label: "Official Domain",
+    description: "Correct company URL",
+  },
+  {
+    id: "no-pressure",
+    label: "No Pressure",
+    description: "Reasonable timeframe",
+  },
+  {
+    id: "contact-info",
+    label: "Valid Contact Info",
+    description: "Real phone/email provided",
+  },
+  {
+    id: "expected-communication",
+    label: "Expected Communication",
+    description: "You initiated this",
+  },
+  {
+    id: "professional-tone",
+    label: "Professional Tone",
+    description: "Clear, proper language",
+  },
+  {
+    id: "secure-methods",
+    label: "Secure Payment Methods",
+    description: "Standard payment options",
+  },
+  {
+    id: "transparent-terms",
+    label: "Transparent Terms",
+    description: "Clear policies stated",
+  },
+  {
+    id: "verifiable-info",
+    label: "Verifiable Information",
+    description: "Details can be confirmed",
+  },
+  {
+    id: "no-sensitive-request",
+    label: "No Sensitive Requests",
+    description: "Doesn't ask for passwords/SSN",
+  },
+  {
+    id: "proper-branding",
+    label: "Proper Branding",
+    description: "Correct logos and formatting",
+  },
+  {
+    id: "reasonable-request",
+    label: "Reasonable Request",
+    description: "Makes logical sense",
+  },
+];
+
 const scenarios: Scenario[] = [
   {
     id: 1,
@@ -109,6 +179,7 @@ Protect Your Account Now!`,
       "personal-info",
       "threats",
     ],
+    safeIndicatorsPresent: [],
   },
   {
     id: 2,
@@ -137,6 +208,16 @@ Real Bank Security Team
 
 This is an automated message. Please do not reply to this email.`,
     redFlagsPresent: [],
+    safeIndicatorsPresent: [
+      "verified-sender",
+      "official-domain",
+      "no-pressure",
+      "contact-info",
+      "professional-tone",
+      "no-sensitive-request",
+      "verifiable-info",
+      "reasonable-request",
+    ],
   },
   {
     id: 3,
@@ -166,6 +247,7 @@ Let me know when you get yours! 💰`,
       "grammar",
       "requests-secrecy",
     ],
+    safeIndicatorsPresent: [],
   },
   {
     id: 4,
@@ -195,6 +277,16 @@ Thank you for your patience.
 IT Department
 Your Company Inc.`,
     redFlagsPresent: [],
+    safeIndicatorsPresent: [
+      "verified-sender",
+      "official-domain",
+      "no-pressure",
+      "contact-info",
+      "expected-communication",
+      "professional-tone",
+      "transparent-terms",
+      "reasonable-request",
+    ],
   },
   {
     id: 5,
@@ -221,6 +313,7 @@ Do you have access to a computer right now?"`,
       "unsolicited",
       "requests-secrecy",
     ],
+    safeIndicatorsPresent: [],
   },
   {
     id: 6,
@@ -254,6 +347,16 @@ Thanks for shopping with us!
 
 Legitimate Store Team`,
     redFlagsPresent: [],
+    safeIndicatorsPresent: [
+      "verified-sender",
+      "official-domain",
+      "no-pressure",
+      "contact-info",
+      "expected-communication",
+      "professional-tone",
+      "secure-methods",
+      "verifiable-info",
+    ],
   },
 ];
 
@@ -264,10 +367,16 @@ export default function ScamBingoPage() {
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
-  const [scenarioResults, setScenarioResults] = useState<
-    { [key: string]: "correct" | "incorrect" | "missed" }[]
-  >([]);
+  const [scenarioSelections, setScenarioSelections] = useState<Set<string>[]>(
+    []
+  );
   const [scoreSaved, setScoreSaved] = useState(false);
+  const [safetyChoice, setSafetyChoice] = useState<"safe" | "unsafe" | null>(
+    null
+  );
+  const [scenarioClassifications, setScenarioClassifications] = useState<
+    ("safe" | "unsafe")[]
+  >([]);
 
   useEffect(() => {
     if (!gameStarted || gameOver) return;
@@ -286,8 +395,10 @@ export default function ScamBingoPage() {
     setTimeElapsed(0);
     setGameOver(false);
     setScore(0);
-    setScenarioResults([]);
+    setScenarioSelections([]);
     setScoreSaved(false);
+    setSafetyChoice(null);
+    setScenarioClassifications([]);
   };
 
   const toggleFlag = (flagId: string) => {
@@ -301,44 +412,82 @@ export default function ScamBingoPage() {
   };
 
   const submitBingo = () => {
-    const scenario = scenarios[currentScenario];
-    const correctFlags = new Set(scenario.redFlagsPresent);
-    const selected = selectedFlags;
+    if (!safetyChoice) return;
 
-    const flagResults: { [key: string]: "correct" | "incorrect" | "missed" } =
-      {};
-
-    let correct = 0;
-    let incorrect = 0;
-
-    selected.forEach((flag) => {
-      if (correctFlags.has(flag)) {
-        correct++;
-        flagResults[flag] = "correct";
-      } else {
-        incorrect++;
-        flagResults[flag] = "incorrect";
-      }
-    });
-
-    correctFlags.forEach((flag) => {
-      if (!selected.has(flag)) {
-        flagResults[flag] = "missed";
-      }
-    });
-
-    const missed = correctFlags.size - correct;
-
-    const roundScore = Math.max(0, correct * 10 - incorrect * 5 - missed * 3);
-    setScore(score + roundScore);
-
-    setScenarioResults([...scenarioResults, flagResults]);
+    // Store the current selections and classification
+    setScenarioSelections([...scenarioSelections, new Set(selectedFlags)]);
+    setScenarioClassifications([...scenarioClassifications, safetyChoice]);
 
     if (currentScenario + 1 >= scenarios.length) {
+      // Calculate final score when all scenarios are complete
+      let totalScore = 0;
+      const allSelections = [...scenarioSelections, new Set(selectedFlags)];
+      const allClassifications = [...scenarioClassifications, safetyChoice];
+
+      allSelections.forEach((selections, index) => {
+        const scenario = scenarios[index];
+        const userClassification = allClassifications[index];
+
+        // Check if classification is correct (unsafe = scam, safe = not scam)
+        const classificationCorrect =
+          (userClassification === "unsafe" && scenario.isScam) ||
+          (userClassification === "safe" && !scenario.isScam);
+
+        // Add bonus for correct classification
+        let roundScore = classificationCorrect ? 20 : 0;
+
+        // Score flags based on classification
+        if (userClassification === "unsafe") {
+          // Score red flags for unsafe scenarios
+          const correctFlags = new Set(scenario.redFlagsPresent);
+          let correct = 0;
+          let incorrect = 0;
+
+          selections.forEach((flag) => {
+            if (correctFlags.has(flag)) {
+              correct++;
+            } else {
+              incorrect++;
+            }
+          });
+
+          const missed = correctFlags.size - correct;
+          const flagScore = Math.max(
+            0,
+            correct * 10 - incorrect * 5 - missed * 3
+          );
+          roundScore += flagScore;
+        } else if (userClassification === "safe") {
+          // Score safe indicators for safe scenarios
+          const correctIndicators = new Set(scenario.safeIndicatorsPresent);
+          let correct = 0;
+          let incorrect = 0;
+
+          selections.forEach((flag) => {
+            if (correctIndicators.has(flag)) {
+              correct++;
+            } else {
+              incorrect++;
+            }
+          });
+
+          const missed = correctIndicators.size - correct;
+          const flagScore = Math.max(
+            0,
+            correct * 10 - incorrect * 5 - missed * 3
+          );
+          roundScore += flagScore;
+        }
+
+        totalScore += roundScore;
+      });
+
+      setScore(totalScore);
       setGameOver(true);
     } else {
       setCurrentScenario(currentScenario + 1);
       setSelectedFlags(new Set());
+      setSafetyChoice(null);
     }
   };
 
@@ -349,7 +498,9 @@ export default function ScamBingoPage() {
     setTimeElapsed(0);
     setGameOver(false);
     setScore(0);
-    setScenarioResults([]);
+    setScenarioSelections([]);
+    setSafetyChoice(null);
+    setScenarioClassifications([]);
     setScoreSaved(false);
   };
 
@@ -362,19 +513,6 @@ export default function ScamBingoPage() {
         Math.round((score / maxPossibleScore) * 100)
       );
 
-      // Calculate total correct, incorrect, and missed flags
-      let totalCorrect = 0;
-      let totalIncorrect = 0;
-      let totalMissed = 0;
-
-      scenarioResults.forEach((result) => {
-        Object.values(result).forEach((status) => {
-          if (status === "correct") totalCorrect++;
-          else if (status === "incorrect") totalIncorrect++;
-          else if (status === "missed") totalMissed++;
-        });
-      });
-
       saveScore({
         game_type: "scam-bingo",
         score: score,
@@ -382,9 +520,6 @@ export default function ScamBingoPage() {
         time_taken: timeElapsed,
         metadata: {
           scenarios_completed: scenarios.length,
-          total_correct: totalCorrect,
-          total_incorrect: totalIncorrect,
-          total_missed: totalMissed,
         },
       }).then((result) => {
         if (result.success) {
@@ -395,16 +530,7 @@ export default function ScamBingoPage() {
         }
       });
     }
-  }, [gameOver, scoreSaved, score, timeElapsed, scenarioResults]);
-
-  const getFlagStatus = (flagId: string) => {
-    for (const result of scenarioResults) {
-      if (result[flagId]) {
-        return result[flagId];
-      }
-    }
-    return null;
-  };
+  }, [gameOver, scoreSaved, score, timeElapsed]);
 
   if (!gameStarted) {
     return (
@@ -616,23 +742,7 @@ export default function ScamBingoPage() {
             <div className="text-sm text-muted-foreground mb-2">
               Scenario {currentScenario + 1} of {scenarios.length}
             </div>
-            <h2 className="text-2xl font-bold mb-2">
-              {scenario.title}
-              <span
-                className={cn(
-                  "ml-3 text-sm px-2 py-1 rounded-md",
-                  scenario.isScam
-                    ? "bg-red-500/10 text-red-500"
-                    : "bg-green-500/10 text-green-500"
-                )}>
-                {scenario.isScam ? "Scam" : "Safe"}
-              </span>
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {scenario.isScam
-                ? "This is a scam - find all the red flags!"
-                : "This is legitimate - check carefully before marking flags"}
-            </p>
+            <h2 className="text-2xl font-bold mb-4">{scenario.title}</h2>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-6">
@@ -646,62 +756,128 @@ export default function ScamBingoPage() {
             </Card>
 
             <div>
-              <Card className="p-6 mb-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Spot the Red Flags
-                </h3>
-                <div className="grid grid-cols-4 gap-3">
-                  {redFlags.map((flag) => {
-                    const flagStatus = getFlagStatus(flag.id);
-                    return (
-                      <button
-                        key={flag.id}
-                        onClick={() => toggleFlag(flag.id)}
-                        className={cn(
-                          "relative p-3 rounded-lg border-2 transition-all text-left h-24 flex flex-col items-center justify-center",
-                          selectedFlags.has(flag.id)
-                            ? "border-primary bg-primary/10"
-                            : "border-border bg-card hover:border-primary/50",
-                          flagStatus && "pointer-events-none"
-                        )}>
-                        <div className="font-semibold text-xs text-center mb-1">
-                          {flag.label}
-                        </div>
-                        {flagStatus && (
-                          <div
+              {!safetyChoice ? (
+                <Card className="p-6 mb-6">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Is this scenario Safe or Unsafe?
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Read the scenario carefully and decide if this is legitimate
+                    or a potential scam.
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      onClick={() => setSafetyChoice("safe")}
+                      variant="outline"
+                      size="lg"
+                      className="h-24 flex flex-col gap-2 bg-green-500/10 hover:bg-green-500/20 border-green-500">
+                      <span className="text-2xl">✓</span>
+                      <span className="font-semibold">Safe</span>
+                    </Button>
+                    <Button
+                      onClick={() => setSafetyChoice("unsafe")}
+                      variant="outline"
+                      size="lg"
+                      className="h-24 flex flex-col gap-2 bg-red-500/10 hover:bg-red-500/20 border-red-500">
+                      <span className="text-2xl">⚠</span>
+                      <span className="font-semibold">Unsafe</span>
+                    </Button>
+                  </div>
+                </Card>
+              ) : safetyChoice === "unsafe" ? (
+                <>
+                  <Card className="p-6 mb-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">
+                        Spot the Red Flags
+                      </h3>
+                      <Button
+                        onClick={() => {
+                          setSafetyChoice(null);
+                          setSelectedFlags(new Set());
+                        }}
+                        variant="ghost"
+                        size="sm">
+                        Change Classification
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      You marked this as <strong>Unsafe</strong>. Now identify
+                      the red flags:
+                    </p>
+                    <div className="grid grid-cols-4 gap-3">
+                      {redFlags.map((flag) => {
+                        return (
+                          <button
+                            key={flag.id}
+                            onClick={() => toggleFlag(flag.id)}
                             className={cn(
-                              "absolute bottom-1 right-1 w-3 h-3 rounded-full",
-                              flagStatus === "correct" && "bg-green-500",
-                              flagStatus === "incorrect" && "bg-red-500",
-                              flagStatus === "missed" && "bg-yellow-500"
-                            )}
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span>Correct</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <span>Wrong</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                    <span>Missed</span>
-                  </div>
-                </div>
-              </Card>
-
-              <Button onClick={submitBingo} className="w-full" size="lg">
-                {currentScenario + 1 < scenarios.length
-                  ? "Next Scenario"
-                  : "Finish Hunt"}
-              </Button>
+                              "relative p-3 rounded-lg border-2 transition-all text-left h-24 flex flex-col items-center justify-center",
+                              selectedFlags.has(flag.id)
+                                ? "border-primary bg-primary/10"
+                                : "border-border bg-card hover:border-primary/50"
+                            )}>
+                            <div className="font-semibold text-xs text-center mb-1">
+                              {flag.label}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </Card>
+                  <Button onClick={submitBingo} className="w-full" size="lg">
+                    {currentScenario + 1 < scenarios.length
+                      ? "Next Scenario"
+                      : "Finish Hunt"}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Card className="p-6 mb-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">
+                        Identify Safe Indicators
+                      </h3>
+                      <Button
+                        onClick={() => {
+                          setSafetyChoice(null);
+                          setSelectedFlags(new Set());
+                        }}
+                        variant="ghost"
+                        size="sm">
+                        Change Classification
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      You marked this as <strong>Safe</strong>. Now identify the indicators that make it legitimate:
+                    </p>
+                    <div className="grid grid-cols-4 gap-3">
+                      {greenFlags.map((flag) => {
+                        return (
+                          <button
+                            key={flag.id}
+                            onClick={() => toggleFlag(flag.id)}
+                            className={cn(
+                              "relative p-3 rounded-lg border-2 transition-all text-left h-24 flex flex-col items-center justify-center",
+                              selectedFlags.has(flag.id)
+                                ? "border-green-500 bg-green-500/10"
+                                : "border-border bg-card hover:border-green-500/50"
+                            )}>
+                            <div className="font-semibold text-xs text-center mb-1">
+                              {flag.label}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </Card>
+                  <Button onClick={submitBingo} className="w-full" size="lg">
+                    {currentScenario + 1 < scenarios.length
+                      ? "Next Scenario"
+                      : "Finish Hunt"}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
