@@ -29,6 +29,9 @@ interface Scenario {
   isScam: boolean;
 }
 
+const prompt =
+  "You are a cybersecurity awareness training content generator.\n\nReturn ONLY valid TypeScript code.\n\nGenerate a constant named `scenarios` of type `Scenario[]` that contains EXACTLY 6 case scenarios.\n\nThe output MUST be an array in this exact format:\n\nconst scenarios: Scenario[] = [\n  {\n    id: number,\n    title: string,\n    isScam: boolean,\n    content: string,\n    redFlagsPresent: string[],\n    safeIndicatorsPresent: string[]\n  }\n];\n\nStrict Rules:\n1. The array must contain exactly 6 objects.\n2. IDs must be sequential from 1 to 6.\n3. Scam scenarios:\n   - isScam must be true\n   - redFlagsPresent must contain multiple values\n   - safeIndicatorsPresent must be an empty array\n4. Legitimate scenarios:\n   - isScam must be false\n   - safeIndicatorsPresent must contain multiple values\n   - redFlagsPresent must be an empty array\n5. Do NOT mix redFlagsPresent and safeIndicatorsPresent in the same object.\n6. Use realistic content such as emails, messages, or call scripts.\n7. Use multiline strings with backticks (`) for the content field.\n8. Do NOT include explanations, comments, markdown, or extra text outside the array.\n\nAllowed redFlagsPresent values:\n- urgency\n- suspicious-link\n- emotional\n- fake-authority\n- personal-info\n- threats\n- too-good\n- payment\n- grammar\n- unsolicited\n- requests-secrecy\n\nAllowed safeIndicatorsPresent values:\n- verified-sender\n- official-domain\n- no-pressure\n- contact-info\n- professional-tone\n- no-sensitive-request\n- verifiable-info\n- reasonable-request\n- expected-communication\n- transparent-terms\n- secure-methods\n\nEnsure a balanced mix of scam and legitimate scenarios.";
+
 const redFlags: RedFlag[] = [
   { id: "urgency", label: "Urgency", description: "Act now or else..." },
   {
@@ -377,6 +380,10 @@ export default function ScamBingoPage() {
   const [scenarioClassifications, setScenarioClassifications] = useState<
     ("safe" | "unsafe")[]
   >([]);
+  const [generatedScenarios, setGeneratedScenarios] =
+    useState<Scenario[]>(scenarios);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!gameStarted || gameOver) return;
@@ -401,6 +408,43 @@ export default function ScamBingoPage() {
     setScenarioClassifications([]);
   };
 
+  const generateNewScenarios = async () => {
+    setIsGenerating(true);
+    setGenerationError(null);
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMsg = data.error || "Failed to generate scenarios";
+        const details = data.details || data.message || "";
+        throw new Error(`${errorMsg}${details ? ": " + details : ""}`);
+      }
+
+      if (data.scenarios && Array.isArray(data.scenarios)) {
+        setGeneratedScenarios(data.scenarios);
+        setGenerationError(null);
+      } else {
+        throw new Error("Invalid scenarios format received");
+      }
+    } catch (error) {
+      console.error("Error generating scenarios:", error);
+      setGenerationError(
+        error instanceof Error ? error.message : "Failed to generate scenarios"
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const toggleFlag = (flagId: string) => {
     const newSelected = new Set(selectedFlags);
     if (newSelected.has(flagId)) {
@@ -418,14 +462,14 @@ export default function ScamBingoPage() {
     setScenarioSelections([...scenarioSelections, new Set(selectedFlags)]);
     setScenarioClassifications([...scenarioClassifications, safetyChoice]);
 
-    if (currentScenario + 1 >= scenarios.length) {
+    if (currentScenario + 1 >= generatedScenarios.length) {
       // Calculate final score when all scenarios are complete
       let totalScore = 0;
       const allSelections = [...scenarioSelections, new Set(selectedFlags)];
       const allClassifications = [...scenarioClassifications, safetyChoice];
 
       allSelections.forEach((selections, index) => {
-        const scenario = scenarios[index];
+        const scenario = generatedScenarios[index];
         const userClassification = allClassifications[index];
 
         // Check if classification is correct (unsafe = scam, safe = not scam)
@@ -507,7 +551,7 @@ export default function ScamBingoPage() {
   // Save score when game ends
   useEffect(() => {
     if (gameOver && !scoreSaved) {
-      const maxPossibleScore = scenarios.length * 10 * 12;
+      const maxPossibleScore = generatedScenarios.length * 10 * 12;
       const accuracy = Math.min(
         100,
         Math.round((score / maxPossibleScore) * 100)
@@ -519,7 +563,7 @@ export default function ScamBingoPage() {
         accuracy: accuracy,
         time_taken: timeElapsed,
         metadata: {
-          scenarios_completed: scenarios.length,
+          scenarios_completed: generatedScenarios.length,
         },
       }).then((result) => {
         if (result.success) {
@@ -602,11 +646,39 @@ export default function ScamBingoPage() {
               </div>
             </div>
 
-            <div className="text-center">
-              <Button onClick={startGame} size="lg" className="text-lg px-8">
-                Start Red Flag Hunt
-              </Button>
-              <div className="mt-4">
+            <div className="text-center space-y-4">
+              {generationError && (
+                <Card className="p-4 bg-red-500/10 border-red-500/50">
+                  <p className="text-sm text-red-500">{generationError}</p>
+                </Card>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button
+                  onClick={startGame}
+                  size="lg"
+                  className="text-lg px-8"
+                  disabled={isGenerating}>
+                  Start Red Flag Hunt
+                </Button>
+                <Button
+                  onClick={generateNewScenarios}
+                  variant="outline"
+                  size="lg"
+                  className="text-lg px-8"
+                  disabled={isGenerating}>
+                  {isGenerating ? (
+                    <>
+                      <span className="animate-spin mr-2">⏳</span>
+                      Generating...
+                    </>
+                  ) : (
+                    "Generate New Scenarios"
+                  )}
+                </Button>
+              </div>
+
+              <div>
                 <Button asChild variant="outline" size="lg">
                   <Link href="/scam-bingo/leaderboard">
                     <Trophy className="h-4 w-4 mr-2" />
@@ -622,7 +694,7 @@ export default function ScamBingoPage() {
   }
 
   if (gameOver) {
-    const maxPossibleScore = scenarios.length * 10 * 12;
+    const maxPossibleScore = generatedScenarios.length * 10 * 12;
     const performancePercent = Math.min(
       100,
       Math.round((score / maxPossibleScore) * 100)
@@ -667,7 +739,7 @@ export default function ScamBingoPage() {
               </Card>
               <Card className="p-6">
                 <div className="text-3xl font-bold text-primary mb-2">
-                  {scenarios.length}
+                  {generatedScenarios.length}
                 </div>
                 <div className="text-sm text-muted-foreground">Scenarios</div>
               </Card>
@@ -726,7 +798,7 @@ export default function ScamBingoPage() {
     );
   }
 
-  const scenario = scenarios[currentScenario];
+  const scenario = generatedScenarios[currentScenario];
   const correctFlags = new Set(scenario.redFlagsPresent);
 
   return (
@@ -757,7 +829,7 @@ export default function ScamBingoPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-6">
             <div className="text-sm text-muted-foreground mb-2">
-              Scenario {currentScenario + 1} of {scenarios.length}
+              Scenario {currentScenario + 1} of {generatedScenarios.length}
             </div>
             <h2 className="text-2xl font-bold mb-4">{scenario.title}</h2>
           </div>
@@ -843,7 +915,7 @@ export default function ScamBingoPage() {
                     </div>
                   </Card>
                   <Button onClick={submitBingo} className="w-full" size="lg">
-                    {currentScenario + 1 < scenarios.length
+                    {currentScenario + 1 < generatedScenarios.length
                       ? "Next Scenario"
                       : "Finish Hunt"}
                   </Button>
@@ -890,7 +962,7 @@ export default function ScamBingoPage() {
                     </div>
                   </Card>
                   <Button onClick={submitBingo} className="w-full" size="lg">
-                    {currentScenario + 1 < scenarios.length
+                    {currentScenario + 1 < generatedScenarios.length
                       ? "Next Scenario"
                       : "Finish Hunt"}
                   </Button>
