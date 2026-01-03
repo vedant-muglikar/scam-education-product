@@ -13,8 +13,7 @@ export const metadata: Metadata = {
     "Interactive educational platform to learn how scams work through gamified scenarios",
   generator: "v0.app",
   icons: {
-    icon: "/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png",
-    apple: "/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png",
+    icon: "/ScamSenseLogo.png",
   },
 };
 
