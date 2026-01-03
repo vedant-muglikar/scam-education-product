@@ -394,7 +394,9 @@ export default function ScamBingoPage() {
 
     return () => clearInterval(timer);
   }, [gameStarted, gameOver]);
-
+  useEffect(() => {
+    generateNewScenarios();
+  }, []);
   const startGame = () => {
     setGameStarted(true);
     setCurrentScenario(0);
@@ -546,6 +548,7 @@ export default function ScamBingoPage() {
     setSafetyChoice(null);
     setScenarioClassifications([]);
     setScoreSaved(false);
+    generateNewScenarios();
   };
 
   // Save score when game ends
@@ -583,7 +586,8 @@ export default function ScamBingoPage() {
           <div className="container mx-auto px-4 py-5">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+            >
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm font-medium">Back to Home</span>
             </Link>
@@ -630,22 +634,7 @@ export default function ScamBingoPage() {
               </ul>
             </Card>
 
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">Red Flag Reference</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {redFlags.map((flag) => (
-                  <Card key={flag.id} className="p-4">
-                    <div className="font-semibold text-xs mb-1">
-                      {flag.label}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {flag.description}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
+            
             <div className="text-center space-y-4">
               {generationError && (
                 <Card className="p-4 bg-red-500/10 border-red-500/50">
@@ -658,24 +647,22 @@ export default function ScamBingoPage() {
                   onClick={startGame}
                   size="lg"
                   className="text-lg px-8"
-                  disabled={isGenerating}>
+                  disabled={isGenerating}
+                >
                   Start Red Flag Hunt
                 </Button>
-                <Button
+                {isGenerating&&<Button
                   onClick={generateNewScenarios}
                   variant="outline"
                   size="lg"
                   className="text-lg px-8"
-                  disabled={isGenerating}>
-                  {isGenerating ? (
-                    <>
-                      <span className="animate-spin mr-2">⏳</span>
-                      Generating...
-                    </>
-                  ) : (
-                    "Generate New Scenarios"
-                  )}
-                </Button>
+                  disabled={isGenerating}
+                >
+                  <>
+                    <span className="animate-spin mr-2">⏳</span>
+                    Generating...
+                  </>
+                </Button>}
               </div>
 
               <div>
@@ -706,7 +693,8 @@ export default function ScamBingoPage() {
           <div className="container mx-auto px-4 py-5">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+            >
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm font-medium">Back to Home</span>
             </Link>
@@ -779,7 +767,8 @@ export default function ScamBingoPage() {
               <Button
                 asChild
                 variant="outline"
-                className="flex-1 bg-transparent">
+                className="flex-1 bg-transparent"
+              >
                 <Link href="/scam-bingo/leaderboard">
                   <Trophy className="h-4 w-4 mr-2" />
                   Leaderboard
@@ -788,7 +777,8 @@ export default function ScamBingoPage() {
               <Button
                 asChild
                 variant="outline"
-                className="flex-1 bg-transparent">
+                className="flex-1 bg-transparent"
+              >
                 <Link href="/">Back to Home</Link>
               </Button>
             </div>
@@ -807,7 +797,8 @@ export default function ScamBingoPage() {
         <div className="container mx-auto px-4 py-5 flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+          >
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium">Exit</span>
           </Link>
@@ -859,7 +850,8 @@ export default function ScamBingoPage() {
                       onClick={() => setSafetyChoice("safe")}
                       variant="outline"
                       size="lg"
-                      className="h-24 flex flex-col gap-2 bg-green-500/10 hover:bg-green-500/20 border-green-500">
+                      className="h-24 flex flex-col gap-2 bg-green-500/10 hover:bg-green-500/20 border-green-500"
+                    >
                       <span className="text-2xl">✓</span>
                       <span className="font-semibold">Safe</span>
                     </Button>
@@ -867,7 +859,8 @@ export default function ScamBingoPage() {
                       onClick={() => setSafetyChoice("unsafe")}
                       variant="outline"
                       size="lg"
-                      className="h-24 flex flex-col gap-2 bg-red-500/10 hover:bg-red-500/20 border-red-500">
+                      className="h-24 flex flex-col gap-2 bg-red-500/10 hover:bg-red-500/20 border-red-500"
+                    >
                       <span className="text-2xl">⚠</span>
                       <span className="font-semibold">Unsafe</span>
                     </Button>
@@ -886,7 +879,8 @@ export default function ScamBingoPage() {
                           setSelectedFlags(new Set());
                         }}
                         variant="ghost"
-                        size="sm">
+                        size="sm"
+                      >
                         Change Classification
                       </Button>
                     </div>
@@ -905,7 +899,8 @@ export default function ScamBingoPage() {
                               selectedFlags.has(flag.id)
                                 ? "border-primary bg-primary/10"
                                 : "border-border bg-card hover:border-primary/50"
-                            )}>
+                            )}
+                          >
                             <div className="font-semibold text-xs text-center mb-1">
                               {flag.label}
                             </div>
@@ -933,7 +928,8 @@ export default function ScamBingoPage() {
                           setSelectedFlags(new Set());
                         }}
                         variant="ghost"
-                        size="sm">
+                        size="sm"
+                      >
                         Change Classification
                       </Button>
                     </div>
@@ -952,7 +948,8 @@ export default function ScamBingoPage() {
                               selectedFlags.has(flag.id)
                                 ? "border-green-500 bg-green-500/10"
                                 : "border-border bg-card hover:border-green-500/50"
-                            )}>
+                            )}
+                          >
                             <div className="font-semibold text-xs text-center mb-1">
                               {flag.label}
                             </div>
