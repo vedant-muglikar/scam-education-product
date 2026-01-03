@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "Interactive educational platform to learn how scams work through gamified scenarios",
   generator: "v0.app",
   icons: {
-    icon: "/ScamSenseLogo.png",
+    icon: "/ScamSenseLogo.svg",
   },
 };
 
