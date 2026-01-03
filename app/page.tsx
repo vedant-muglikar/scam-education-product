@@ -26,13 +26,13 @@ export default async function HomePage() {
             <div className="relative">
               <img
                 src="/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png"
-                alt="ScamSmart Logo"
+                alt="ScamSense Logo"
                 className="h-16 w-20 transition-transform group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-              ScamSmart
+              ScamSense
             </h1>
           </div>
           <nav className="hidden md:flex items-center gap-8">
@@ -70,7 +70,7 @@ export default async function HomePage() {
           <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/15 to-primary/5 border border-primary/20 text-primary text-sm font-semibold mb-8 shadow-lg hover:shadow-primary/20 transition-all">
             <img
               src="/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png"
-              alt="ScamSmart Logo"
+              alt="ScamSense Logo"
               className="h-16 w-20 transition-transform group-hover:scale-110"
             />
             <span>Interactive Learning Platform</span>
@@ -250,11 +250,11 @@ export default async function HomePage() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <img
               src="/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png"
-              alt="ScamSmart Logo"
+              alt="ScamSense Logo"
               className="h-16 w-20 transition-transform group-hover:scale-110"
             />
             <span className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-              ScamSmart
+              ScamSense
             </span>
           </div>
           <p className="text-muted-foreground/80 mb-2 font-medium">
