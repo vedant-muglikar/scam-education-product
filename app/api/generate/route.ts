@@ -9,7 +9,6 @@ if (!apiKey) {
 
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
-// 🔁 Model fallback order (low → high)
 const MODEL_FALLBACKS = [
   "gemini-2.5-flash-lite",
   "gemini-2.5-flash",
@@ -44,7 +43,6 @@ export async function POST(req: NextRequest) {
 
     let lastError: unknown = null;
 
-    // 🔁 Try each model until one works
     for (const modelName of MODEL_FALLBACKS) {
       try {
         const model = genAI.getGenerativeModel({ model: modelName });
@@ -57,7 +55,6 @@ export async function POST(req: NextRequest) {
         const result = await chatSession.sendMessage(prompt);
         const responseText = result.response.text();
 
-        // --- existing parsing logic ---
         const scenariosMatch = responseText.match(
           /const scenarios: Scenario\[\] = (\[[\s\S]*?\]);/
         );
@@ -86,7 +83,7 @@ export async function POST(req: NextRequest) {
           msg.includes("resource_exhausted");
 
         if (!isQuotaError) {
-          throw err; // real error → stop
+          throw err;
         }
 
         console.warn(
