@@ -25,7 +25,7 @@ export default async function HomePage() {
           <div className="flex items-center gap-3 group cursor-pointer">
             <div className="relative">
               <img
-                src="/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png"
+                src="/ScamSenseLogo.svg"
                 alt="ScamSense Logo"
                 className="h-16 w-20 transition-transform group-hover:scale-110"
               />
@@ -69,7 +69,7 @@ export default async function HomePage() {
         <div className="max-w-5xl mx-auto text-center relative">
           <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/15 to-primary/5 border border-primary/20 text-primary text-sm font-semibold mb-8 shadow-lg hover:shadow-primary/20 transition-all">
             <img
-              src="/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png"
+              src="/ScamSenseLogo.svg"
               alt="ScamSense Logo"
               className="h-16 w-20 transition-transform group-hover:scale-110"
             />
@@ -249,7 +249,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <img
-              src="/Gemini_Generated_Image_kexveekexveekexv-Photoroom.png"
+              src="/ScamSenseLogo.svg"
               alt="ScamSense Logo"
               className="h-16 w-20 transition-transform group-hover:scale-110"
             />
