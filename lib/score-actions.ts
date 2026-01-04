@@ -2,7 +2,7 @@ import { supabase } from "@/utils/supabase/client";
 
 export interface GameScore {
   user_id: string;
-  game_type: "flash-card" | "scam-bingo" | "story-adventure";
+  game_type: "flash-card" | "scam-bingo" | "story-adventure" | "scam-ladder";
   score: number;
   accuracy?: number;
   time_taken?: number;

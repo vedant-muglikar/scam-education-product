@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Shield, Zap, Target, User } from "lucide-react";
+import { Shield, Zap, Dices, User } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { LogoutButton } from "@/components/LogoutButton";
 
@@ -173,25 +173,25 @@ export default async function HomePage() {
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {/* Story Adventure */}
+          {/* Scam Ladder */}
           <Card className="overflow-hidden group hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 border-border/50 hover:border-primary/50 hover:-translate-y-1">
-            <div className="h-56 bg-gradient-to-br from-primary/30 via-primary/10 to-primary/5 flex items-center justify-center relative overflow-hidden">
+            <div className="h-56 bg-gradient-to-br from-blue-500/30 via-blue-500/10 to-blue-500/5 flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-grid-white/5 bg-[size:20px_20px]" />
-              <Target className="h-20 w-20 text-primary relative z-10 group-hover:scale-110 transition-transform" />
+              <Dices className="h-20 w-20 text-blue-500 relative z-10 group-hover:scale-110 transition-transform" />
             </div>
             <div className="p-7 bg-card/50 backdrop-blur-sm">
               <h4 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">
-                Story Adventure
+                Scam Ladder Challenge
               </h4>
               <p className="text-sm text-muted-foreground/80 mb-5 leading-relaxed min-h-[4rem]">
-                Navigate branching scenarios where every path reveals different
-                scam techniques. No matter your choice, you'll learn.
+                Climb to the top by answering scam awareness questions. Roll the
+                dice for correct answers, move back for wrong ones!
               </p>
               <Button
                 asChild
                 className="w-full shadow-md hover:shadow-lg transition-shadow"
                 variant="default">
-                <Link href="/story-adventure">Start Adventure →</Link>
+                <Link href="/scam-ladder">Start Climbing →</Link>
               </Button>
             </div>
           </Card>
