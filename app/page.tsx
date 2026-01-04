@@ -226,7 +226,7 @@ export default async function HomePage() {
             </div>
             <div className="p-7 bg-card/50 backdrop-blur-sm">
               <h4 className="text-2xl font-bold mb-3 group-hover:text-emerald-600 transition-colors">
-                Red Flag Hunter
+                Bingo
               </h4>
               <p className="text-sm text-muted-foreground/80 mb-5 leading-relaxed min-h-[4rem]">
                 Read scenarios and identify red flags on your board. Train your
