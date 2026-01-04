@@ -70,7 +70,7 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-emerald-500/5">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3">
           <Link
             href="/scam-bingo"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground">

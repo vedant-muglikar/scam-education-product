@@ -21,13 +21,13 @@ export default async function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-5 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 group cursor-pointer">
             <div className="relative">
               <img
                 src="/ScamSenseLogo.svg"
                 alt="ScamSense Logo"
-                className="h-12 w-14 transition-transform group-hover:scale-110"
+                className="h-8 w-10 transition-transform group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
@@ -234,7 +234,7 @@ export default async function HomePage() {
               </p>
               <Button
                 asChild
-                className="w-full bg-emerald-600/50 shadow-md hover:shadow-lg transition-shadow border-2 border-emerald-600/50 hover:bg-emerald-600/10"
+                className="w-full bg-emerald-600/90 text-white shadow-md hover:shadow-lg transition-shadow border-2 border-emerald-600/50 hover:bg-emerald-600/10"
                 variant="outline">
                 <Link href="/scam-bingo">Start Hunt →</Link>
               </Button>

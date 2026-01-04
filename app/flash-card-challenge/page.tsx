@@ -218,7 +218,7 @@ export default function FlashCardChallengePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-yellow-500/5">
         <header className="border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm">
-          <div className="container mx-auto px-4 py-5">
+          <div className="container mx-auto px-4 py-3">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
@@ -296,7 +296,7 @@ export default function FlashCardChallengePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-yellow-500/5">
         <header className="border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm">
-          <div className="container mx-auto px-4 py-5">
+          <div className="container mx-auto px-4 py-3">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
@@ -392,7 +392,7 @@ export default function FlashCardChallengePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-yellow-500/5">
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm">
-        <div className="container mx-auto px-4 py-5 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
