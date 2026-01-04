@@ -384,7 +384,9 @@ export default function ScamLadderPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>Reach square 16 to win the game!</span>
+                  <span>
+                    Start from bottom-right and reach the top-left to win!
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
@@ -511,139 +513,173 @@ export default function ScamLadderPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
-          {/* Game Board */}
-          <Card className="p-6 mb-8">
-            <div className="grid grid-cols-4 gap-3 mb-4">
-              {Array.from({ length: BOARD_SIZE }).map((_, index) => {
-                const isCurrentPosition = index === currentPosition;
-                const isPassed = index < currentPosition;
-                const isFinish = index === WIN_POSITION;
+        <div className="max-w-7xl mx-auto">
+          <div className="flex gap-6 items-start">
+            {/* Game Board - Left Side */}
+            <Card className="p-5 flex-shrink-0">
+              <div className="grid grid-cols-4 gap-3 w-[400px]">
+                {Array.from({ length: BOARD_SIZE }).map((_, index) => {
+                  // Convert position to row and column for display
+                  // Zig-zag pattern for 4x4 grid
+                  const row = Math.floor(index / 4);
+                  const col = index % 4;
 
-                return (
-                  <div
-                    key={index}
-                    className={cn(
-                      "aspect-square rounded-lg border-2 flex items-center justify-center font-bold text-lg transition-all",
-                      isCurrentPosition &&
-                        "border-primary bg-primary/20 scale-110 shadow-lg",
-                      isPassed &&
-                        !isCurrentPosition &&
-                        "border-primary/30 bg-primary/5",
-                      !isPassed &&
-                        !isCurrentPosition &&
-                        "border-border bg-card",
-                      isFinish &&
-                        "bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500"
-                    )}>
-                    {isCurrentPosition && "🎯"}
-                    {isFinish && !isCurrentPosition && "🏆"}
-                    {!isCurrentPosition && !isFinish && (
-                      <span className="text-muted-foreground">{index + 1}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
+                  // Calculate display position for zig-zag (starting from bottom-right)
+                  let displayRow = 3 - row; // Reverse rows so 0 is bottom
+                  let displayCol;
 
-          {/* Question Card */}
-          {showQuestion && currentQuestion && (
-            <Card className="p-8">
-              <h3 className="text-xl font-semibold mb-6">
-                {currentQuestion.question}
-              </h3>
+                  // Adjust so we start from bottom-right and alternate direction each row
+                  if (displayRow % 2 === 0) {
+                    // Even rows (0, 2 from bottom): right to left
+                    displayCol = 3 - col;
+                  } else {
+                    // Odd rows (1, 3 from bottom): left to right
+                    displayCol = col;
+                  }
 
-              <div className="space-y-4 mb-6">
-                {currentQuestion.options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswerSelect(index)}
-                    disabled={selectedAnswer !== null}
-                    className={cn(
-                      "w-full p-4 rounded-lg border-2 text-left transition-all",
-                      selectedAnswer === null &&
-                        "hover:border-primary hover:bg-primary/5 cursor-pointer",
-                      selectedAnswer === index &&
-                        index === currentQuestion.correctAnswer &&
-                        "border-green-500 bg-green-500/10",
-                      selectedAnswer === index &&
-                        index !== currentQuestion.correctAnswer &&
-                        "border-red-500 bg-red-500/10",
-                      selectedAnswer !== null &&
-                        selectedAnswer !== index &&
-                        "opacity-50",
-                      selectedAnswer !== null && "cursor-not-allowed"
-                    )}>
-                    <div className="flex items-center justify-between">
-                      <span>{option}</span>
-                      {selectedAnswer === index &&
-                        index === currentQuestion.correctAnswer && (
-                          <span className="text-green-500">✓</span>
-                        )}
-                      {selectedAnswer === index &&
-                        index !== currentQuestion.correctAnswer && (
-                          <span className="text-red-500">✗</span>
-                        )}
+                  const isCurrentPosition = index === currentPosition;
+                  const isPassed = index < currentPosition;
+                  const isFinish = index === WIN_POSITION;
+                  const isStart = index === 0;
+
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        gridRow: displayRow + 1,
+                        gridColumn: displayCol + 1,
+                      }}
+                      className={cn(
+                        "aspect-square rounded-lg border-2 flex flex-col items-center justify-center font-semibold text-base transition-all p-7",
+                        isCurrentPosition &&
+                          "border-primary bg-primary/20 scale-110 shadow-lg",
+                        isPassed &&
+                          !isCurrentPosition &&
+                          "border-primary/30 bg-primary/5",
+                        !isPassed &&
+                          !isCurrentPosition &&
+                          "border-border bg-card",
+                        isFinish &&
+                          "bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500",
+                        isStart &&
+                          "bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500"
+                      )}>
+                      {isCurrentPosition && <div className="text-2xl">🎯</div>}
+                      {isFinish && !isCurrentPosition && (
+                        <div className="text-2xl">🏆</div>
+                      )}
+                      {isStart && !isCurrentPosition && (
+                        <div className="text-2xl">🚀</div>
+                      )}
+                      {!isCurrentPosition && !isFinish && !isStart && (
+                        <span className="text-muted-foreground">
+                          {index + 1}
+                        </span>
+                      )}
                     </div>
-                  </button>
-                ))}
+                  );
+                })}
               </div>
+            </Card>
 
-              {showResult && (
-                <div className="space-y-4">
-                  <Card
-                    className={cn(
-                      "p-4",
-                      selectedAnswer === currentQuestion.correctAnswer
-                        ? "bg-green-500/10 border-green-500/50"
-                        : "bg-red-500/10 border-red-500/50"
-                    )}>
-                    <p className="text-sm mb-2 font-semibold">
-                      {selectedAnswer === currentQuestion.correctAnswer
-                        ? "✓ Correct!"
-                        : "✗ Incorrect"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {currentQuestion.explanation}
-                    </p>
-                  </Card>
+            {/* Question Card - Right Side */}
+            {showQuestion && currentQuestion && (
+              <Card className="p-8 flex-1">
+                <h3 className="text-xl font-semibold mb-6">
+                  {currentQuestion.question}
+                </h3>
 
-                  {diceRoll !== null && (
-                    <Card className="p-4 bg-primary/5 border-primary/30">
-                      <p className="text-center text-lg font-bold">
-                        🎲 You rolled a {diceRoll}! Moving forward {diceRoll}{" "}
-                        {diceRoll === 1 ? "square" : "squares"}!
+                <div className="space-y-4 mb-6">
+                  {currentQuestion.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleAnswerSelect(index)}
+                      disabled={selectedAnswer !== null}
+                      className={cn(
+                        "w-full p-4 rounded-lg border-2 text-left transition-all",
+                        selectedAnswer === null &&
+                          "hover:border-primary hover:bg-primary/5 cursor-pointer",
+                        selectedAnswer === index &&
+                          index === currentQuestion.correctAnswer &&
+                          "border-green-500 bg-green-500/10",
+                        selectedAnswer === index &&
+                          index !== currentQuestion.correctAnswer &&
+                          "border-red-500 bg-red-500/10",
+                        selectedAnswer !== null &&
+                          selectedAnswer !== index &&
+                          "opacity-50",
+                        selectedAnswer !== null && "cursor-not-allowed"
+                      )}>
+                      <div className="flex items-center justify-between">
+                        <span>{option}</span>
+                        {selectedAnswer === index &&
+                          index === currentQuestion.correctAnswer && (
+                            <span className="text-green-500">✓</span>
+                          )}
+                        {selectedAnswer === index &&
+                          index !== currentQuestion.correctAnswer && (
+                            <span className="text-red-500">✗</span>
+                          )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {showResult && (
+                  <div className="space-y-4">
+                    <Card
+                      className={cn(
+                        "p-4",
+                        selectedAnswer === currentQuestion.correctAnswer
+                          ? "bg-green-500/10 border-green-500/50"
+                          : "bg-red-500/10 border-red-500/50"
+                      )}>
+                      <p className="text-sm mb-2 font-semibold">
+                        {selectedAnswer === currentQuestion.correctAnswer
+                          ? "✓ Correct!"
+                          : "✗ Incorrect"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {currentQuestion.explanation}
                       </p>
                     </Card>
-                  )}
 
-                  {!isRolling && diceRoll === null && (
-                    <Button
-                      onClick={handleContinue}
-                      className="w-full"
-                      size="lg">
-                      {selectedAnswer === currentQuestion.correctAnswer ? (
-                        <>
-                          <Dices className="h-5 w-5 mr-2" />
-                          Roll the Dice
-                        </>
-                      ) : (
-                        <>Move Back 1 Square</>
-                      )}
-                    </Button>
-                  )}
+                    {diceRoll !== null && (
+                      <Card className="p-4 bg-primary/5 border-primary/30">
+                        <p className="text-center text-lg font-bold">
+                          🎲 You rolled a {diceRoll}! Moving forward {diceRoll}{" "}
+                          {diceRoll === 1 ? "square" : "squares"}!
+                        </p>
+                      </Card>
+                    )}
 
-                  {isRolling && (
-                    <div className="text-center py-4">
-                      <Dices className="h-12 w-12 mx-auto animate-bounce text-primary" />
-                      <p className="mt-2 text-muted-foreground">Rolling...</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </Card>
-          )}
+                    {!isRolling && diceRoll === null && (
+                      <Button
+                        onClick={handleContinue}
+                        className="w-full"
+                        size="lg">
+                        {selectedAnswer === currentQuestion.correctAnswer ? (
+                          <>
+                            <Dices className="h-5 w-5 mr-2" />
+                            Roll the Dice
+                          </>
+                        ) : (
+                          <>Move Back 1 Square</>
+                        )}
+                      </Button>
+                    )}
+
+                    {isRolling && (
+                      <div className="text-center py-4">
+                        <Dices className="h-12 w-12 mx-auto animate-bounce text-primary" />
+                        <p className="mt-2 text-muted-foreground">Rolling...</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Card>
+            )}
+          </div>
         </div>
       </main>
     </div>
