@@ -395,6 +395,11 @@ export default function ScamBingoPage() {
     return () => clearInterval(timer);
   }, [gameStarted, gameOver]);
 
+  // Auto-generate scenarios on mount
+  useEffect(() => {
+    generateNewScenarios();
+  }, []);
+
   const startGame = () => {
     setGameStarted(true);
     setCurrentScenario(0);
@@ -437,9 +442,9 @@ export default function ScamBingoPage() {
       }
     } catch (error) {
       console.error("Error generating scenarios:", error);
-      setGenerationError(
-        error instanceof Error ? error.message : "Failed to generate scenarios"
-      );
+      // Fallback to default scenarios on error
+      setGeneratedScenarios(scenarios);
+      setGenerationError(null);
     } finally {
       setIsGenerating(false);
     }
@@ -647,33 +652,19 @@ export default function ScamBingoPage() {
             </div>
 
             <div className="text-center space-y-4">
-              {generationError && (
-                <Card className="p-4 bg-red-500/10 border-red-500/50">
-                  <p className="text-sm text-red-500">{generationError}</p>
-                </Card>
-              )}
-
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Button
                   onClick={startGame}
                   size="lg"
                   className="text-lg px-8"
                   disabled={isGenerating}>
-                  Start Red Flag Hunt
-                </Button>
-                <Button
-                  onClick={generateNewScenarios}
-                  variant="outline"
-                  size="lg"
-                  className="text-lg px-8"
-                  disabled={isGenerating}>
                   {isGenerating ? (
                     <>
                       <span className="animate-spin mr-2">⏳</span>
-                      Generating...
+                      Loading Scenarios...
                     </>
                   ) : (
-                    "Generate New Scenarios"
+                    "Start Red Flag Hunt"
                   )}
                 </Button>
               </div>
