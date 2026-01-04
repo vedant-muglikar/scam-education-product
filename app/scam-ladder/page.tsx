@@ -481,7 +481,7 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
               </ul>
             </Card>
 
-            <div className="text-center">
+            <div className="text-center space-y-4">
               <Button
                 onClick={startGame}
                 size="lg"
@@ -491,6 +491,11 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
                   ? "Generating Questions..."
                   : "Start Climbing!"}
               </Button>
+              <div>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/scam-ladder/leaderboard">View Leaderboard</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </main>
@@ -567,6 +572,9 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
               <Button onClick={resetGame} size="lg">
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Play Again
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/scam-ladder/leaderboard">View Leaderboard</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
                 <Link href="/">Back to Home</Link>
