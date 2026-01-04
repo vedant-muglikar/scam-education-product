@@ -266,6 +266,11 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
     }
   };
 
+  // Fetch questions when page loads
+  useEffect(() => {
+    fetchQuestionsFromAPI();
+  }, []);
+
   useEffect(() => {
     if (gameOver && !scoreSaved && gameStarted) {
       const percentage =
@@ -310,7 +315,7 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
     ];
   };
 
-  const startGame = async () => {
+  const startGame = () => {
     setGameStarted(true);
     setCurrentPosition(0);
     setScore(0);
@@ -319,9 +324,6 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
     setGameOver(false);
     setScoreSaved(false);
     setUsedQuestions(new Set());
-
-    // Fetch questions from API
-    await fetchQuestionsFromAPI();
 
     presentQuestion();
   };
@@ -486,7 +488,7 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
                 className="text-lg px-8"
                 disabled={isLoadingQuestions}>
                 {isLoadingQuestions
-                  ? "Loading Questions..."
+                  ? "Generating Questions..."
                   : "Start Climbing!"}
               </Button>
             </div>
