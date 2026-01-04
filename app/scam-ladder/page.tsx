@@ -186,9 +186,85 @@ export default function ScamLadderPage() {
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [scoreSaved, setScoreSaved] = useState(false);
   const [usedQuestions, setUsedQuestions] = useState<Set<number>>(new Set());
+  const [availableQuestions, setAvailableQuestions] =
+    useState<Question[]>(questions);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
 
   const BOARD_SIZE = 16;
   const WIN_POSITION = 15;
+
+  const fetchQuestionsFromAPI = async () => {
+    try {
+      setIsLoadingQuestions(true);
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: `Generate exactly 16 scam awareness questions in this exact JSON format:
+[
+  {
+    "id": 1,
+    "question": "question text",
+    "options": ["option 1", "option 2"],
+    "correctAnswer": 0 or 1,
+    "explanation": "explanation text"
+  }
+]
+
+Each question should test knowledge about:
+- Phishing emails and links
+- Social engineering tactics
+- Financial scams
+- Romance scams
+- Tech support scams
+- Investment fraud
+- Identity theft
+- Online shopping scams
+
+Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (index of correct option).`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+
+      if (
+        data.scenarios &&
+        Array.isArray(data.scenarios) &&
+        data.scenarios.length > 0
+      ) {
+        // Map the scenarios to match our Question interface
+        const formattedQuestions: Question[] = data.scenarios.map(
+          (q: any, index: number) => ({
+            id: q.id || index + 1,
+            question: q.question,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation,
+          })
+        );
+
+        setAvailableQuestions(formattedQuestions);
+        return formattedQuestions;
+      } else {
+        throw new Error("Invalid response format");
+      }
+    } catch (error) {
+      console.error(
+        "Failed to fetch questions from API, using default questions:",
+        error
+      );
+      setAvailableQuestions(questions);
+      return questions;
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+  };
 
   useEffect(() => {
     if (gameOver && !scoreSaved && gameStarted) {
@@ -220,19 +296,21 @@ export default function ScamLadderPage() {
   ]);
 
   const getRandomQuestion = (): Question => {
-    const availableQuestions = questions.filter(
+    const availableQuestionsFiltered = availableQuestions.filter(
       (q) => !usedQuestions.has(q.id)
     );
-    if (availableQuestions.length === 0) {
+    if (availableQuestionsFiltered.length === 0) {
       setUsedQuestions(new Set());
-      return questions[Math.floor(Math.random() * questions.length)];
+      return availableQuestions[
+        Math.floor(Math.random() * availableQuestions.length)
+      ];
     }
-    return availableQuestions[
-      Math.floor(Math.random() * availableQuestions.length)
+    return availableQuestionsFiltered[
+      Math.floor(Math.random() * availableQuestionsFiltered.length)
     ];
   };
 
-  const startGame = () => {
+  const startGame = async () => {
     setGameStarted(true);
     setCurrentPosition(0);
     setScore(0);
@@ -241,6 +319,10 @@ export default function ScamLadderPage() {
     setGameOver(false);
     setScoreSaved(false);
     setUsedQuestions(new Set());
+
+    // Fetch questions from API
+    await fetchQuestionsFromAPI();
+
     presentQuestion();
   };
 
@@ -398,8 +480,14 @@ export default function ScamLadderPage() {
             </Card>
 
             <div className="text-center">
-              <Button onClick={startGame} size="lg" className="text-lg px-8">
-                Start Climbing!
+              <Button
+                onClick={startGame}
+                size="lg"
+                className="text-lg px-8"
+                disabled={isLoadingQuestions}>
+                {isLoadingQuestions
+                  ? "Loading Questions..."
+                  : "Start Climbing!"}
               </Button>
             </div>
           </div>
