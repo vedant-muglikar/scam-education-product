@@ -4,14 +4,17 @@ import { NextRequest, NextResponse } from "next/server";
 const apiKey = process.env.GEMINI_API_KEY;
 
 if (!apiKey) {
-  console.error("❌ GEMINI_API_KEY is not set in environment variables");
+  console.error("❌ GEMINI_API_KEY is not set");
 }
 
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
-const model = genAI?.getGenerativeModel({
-  model: "gemini-3-flash-preview",
-});
+// 🔁 Model fallback order (low → high)
+const MODEL_FALLBACKS = [
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.5-pro",
+];
 
 const generationConfig = {
   temperature: 1,
@@ -23,13 +26,9 @@ const generationConfig = {
 
 export async function POST(req: NextRequest) {
   try {
-    if (!apiKey || !genAI || !model) {
+    if (!apiKey || !genAI) {
       return NextResponse.json(
-        {
-          error: "GEMINI_API_KEY is not configured",
-          setup:
-            "Visit https://makersuite.google.com/app/apikey to get your API key",
-        },
+        { error: "GEMINI_API_KEY is not configured" },
         { status: 500 }
       );
     }
@@ -43,67 +42,69 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const chatSession = model.startChat({
-      generationConfig,
-      history: [],
-    });
+    let lastError: unknown = null;
 
-    const result = await chatSession.sendMessage(prompt);
-    const responseText = result.response.text();
+    // 🔁 Try each model until one works
+    for (const modelName of MODEL_FALLBACKS) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
 
-    // Extract the scenarios array
-    const scenariosMatch = responseText.match(
-      /const scenarios: Scenario\[\] = (\[[\s\S]*?\]);/
-    );
+        const chatSession = model.startChat({
+          generationConfig,
+          history: [],
+        });
 
-    if (!scenariosMatch) {
-      const arrayMatch = responseText.match(/\[[\s\S]*\]/);
-      if (arrayMatch) {
-        try {
+        const result = await chatSession.sendMessage(prompt);
+        const responseText = result.response.text();
+
+        // --- existing parsing logic ---
+        const scenariosMatch = responseText.match(
+          /const scenarios: Scenario\[\] = (\[[\s\S]*?\]);/
+        );
+
+        if (!scenariosMatch) {
+          const arrayMatch = responseText.match(/\[[\s\S]*\]/);
+          if (!arrayMatch) {
+            throw new Error("No scenarios found");
+          }
+
           const scenarios = eval(`(${arrayMatch[0]})`);
-          return NextResponse.json({ scenarios, raw: responseText });
-        } catch {
-          return NextResponse.json(
-            {
-              error: "Failed to parse scenarios",
-              raw: responseText,
-            },
-            { status: 500 }
-          );
+          return NextResponse.json({ scenarios, modelUsed: modelName });
         }
+
+        const scenarios = eval(`(${scenariosMatch[1]})`);
+        return NextResponse.json({ scenarios, modelUsed: modelName });
+      } catch (err: any) {
+        lastError = err;
+
+        const msg = err?.message?.toLowerCase?.() ?? "";
+
+        const isQuotaError =
+          msg.includes("quota") ||
+          msg.includes("rate") ||
+          msg.includes("limit") ||
+          msg.includes("resource_exhausted");
+
+        if (!isQuotaError) {
+          throw err; // real error → stop
+        }
+
+        console.warn(
+          `⚠️ ${modelName} hit rate/quota limit, trying next model...`
+        );
       }
-      return NextResponse.json(
-        { error: "No scenarios found", raw: responseText },
-        { status: 500 }
-      );
     }
 
-    try {
-      const scenarios = eval(`(${scenariosMatch[1]})`);
-      return NextResponse.json({ scenarios, raw: responseText });
-    } catch (error) {
-      return NextResponse.json(
-        {
-          error: "Failed to parse scenarios",
-          details: error instanceof Error ? error.message : "Unknown error",
-          raw: responseText,
-        },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(
+      {
+        error: "All models exceeded quota",
+        details:
+          lastError instanceof Error ? lastError.message : "Unknown error",
+      },
+      { status: 429 }
+    );
   } catch (error: any) {
     console.error("Error generating scenarios:", error);
-
-    if (error.message?.includes("API key not valid")) {
-      return NextResponse.json(
-        {
-          error: "Invalid API key",
-          message: "Please check your GEMINI_API_KEY in .env.local",
-          setup: "Visit https://makersuite.google.com/app/apikey",
-        },
-        { status: 401 }
-      );
-    }
 
     return NextResponse.json(
       {

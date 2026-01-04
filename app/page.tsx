@@ -27,7 +27,7 @@ export default async function HomePage() {
               <img
                 src="/ScamSenseLogo.svg"
                 alt="ScamSense Logo"
-                className="h-16 w-20 transition-transform group-hover:scale-110"
+                className="h-12 w-14 transition-transform group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
@@ -71,7 +71,7 @@ export default async function HomePage() {
             <img
               src="/ScamSenseLogo.svg"
               alt="ScamSense Logo"
-              className="h-16 w-20 transition-transform group-hover:scale-110"
+              className="h-12 w-14 transition-transform group-hover:scale-110"
             />
             <span>Interactive Learning Platform</span>
           </div>
@@ -234,7 +234,7 @@ export default async function HomePage() {
               </p>
               <Button
                 asChild
-                className="w-full shadow-md hover:shadow-lg transition-shadow border-2 border-emerald-600/50 hover:bg-emerald-600/10"
+                className="w-full bg-emerald-600/50 shadow-md hover:shadow-lg transition-shadow border-2 border-emerald-600/50 hover:bg-emerald-600/10"
                 variant="outline">
                 <Link href="/scam-bingo">Start Hunt →</Link>
               </Button>
@@ -251,7 +251,7 @@ export default async function HomePage() {
             <img
               src="/ScamSenseLogo.svg"
               alt="ScamSense Logo"
-              className="h-16 w-20 transition-transform group-hover:scale-110"
+              className="h-12 w-14 transition-transform group-hover:scale-110"
             />
             <span className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
               ScamSense
