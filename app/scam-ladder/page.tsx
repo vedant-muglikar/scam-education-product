@@ -171,9 +171,29 @@ const questions: Question[] = [
   },
 ];
 
+interface PlayerState {
+  position: number;
+  score: number;
+  correctAnswers: number;
+  totalQuestions: number;
+}
+
 export default function ScamLadderPage() {
   const [gameStarted, setGameStarted] = useState(false);
-  const [currentPosition, setCurrentPosition] = useState(0);
+  const [twoPlayerMode, setTwoPlayerMode] = useState(false);
+  const [currentPlayer, setCurrentPlayer] = useState<1 | 2>(1);
+  const [player1, setPlayer1] = useState<PlayerState>({
+    position: 0,
+    score: 0,
+    correctAnswers: 0,
+    totalQuestions: 0,
+  });
+  const [player2, setPlayer2] = useState<PlayerState>({
+    position: 0,
+    score: 0,
+    correctAnswers: 0,
+    totalQuestions: 0,
+  });
   const [showQuestion, setShowQuestion] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -181,9 +201,7 @@ export default function ScamLadderPage() {
   const [diceRoll, setDiceRoll] = useState<number | null>(null);
   const [isRolling, setIsRolling] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [score, setScore] = useState(0);
-  const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [winner, setWinner] = useState<1 | 2 | null>(null);
   const [scoreSaved, setScoreSaved] = useState(false);
   const [usedQuestions, setUsedQuestions] = useState<Set<number>>(new Set());
   const [availableQuestions, setAvailableQuestions] =
@@ -192,6 +210,18 @@ export default function ScamLadderPage() {
 
   const BOARD_SIZE = 16;
   const WIN_POSITION = 15;
+
+  // Get current player state
+  const getCurrentPlayerState = () => (currentPlayer === 1 ? player1 : player2);
+  const setCurrentPlayerState = (
+    updater: (prev: PlayerState) => PlayerState
+  ) => {
+    if (currentPlayer === 1) {
+      setPlayer1(updater);
+    } else {
+      setPlayer2(updater);
+    }
+  };
 
   const fetchQuestionsFromAPI = async () => {
     try {
@@ -273,11 +303,16 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
 
   useEffect(() => {
     if (gameOver && !scoreSaved && gameStarted) {
+      const currentPlayerState = getCurrentPlayerState();
       const percentage =
-        totalQuestions > 0
-          ? Math.round((correctAnswers / totalQuestions) * 100)
+        currentPlayerState.totalQuestions > 0
+          ? Math.round(
+              (currentPlayerState.correctAnswers /
+                currentPlayerState.totalQuestions) *
+                100
+            )
           : 0;
-      const finalScore = score;
+      const finalScore = currentPlayerState.score;
 
       saveScore({
         game_type: "scam-ladder",
@@ -285,20 +320,15 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
         time_taken: 0,
         accuracy: percentage,
         metadata: {
-          scenarios_completed: totalQuestions,
+          scenarios_completed: currentPlayerState.totalQuestions,
+          mode: twoPlayerMode ? "two-player" : "single-player",
+          player: twoPlayerMode ? `Player ${winner}` : undefined,
         },
       }).then(() => {
         setScoreSaved(true);
       });
     }
-  }, [
-    gameOver,
-    scoreSaved,
-    score,
-    correctAnswers,
-    totalQuestions,
-    gameStarted,
-  ]);
+  }, [gameOver, scoreSaved, gameStarted, twoPlayerMode, winner]);
 
   const getRandomQuestion = (): Question => {
     const availableQuestionsFiltered = availableQuestions.filter(
@@ -315,13 +345,24 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
     ];
   };
 
-  const startGame = () => {
+  const startGame = (multiplayer: boolean = false) => {
+    setTwoPlayerMode(multiplayer);
     setGameStarted(true);
-    setCurrentPosition(0);
-    setScore(0);
-    setCorrectAnswers(0);
-    setTotalQuestions(0);
+    setCurrentPlayer(1);
+    setPlayer1({
+      position: 0,
+      score: 0,
+      correctAnswers: 0,
+      totalQuestions: 0,
+    });
+    setPlayer2({
+      position: 0,
+      score: 0,
+      correctAnswers: 0,
+      totalQuestions: 0,
+    });
     setGameOver(false);
+    setWinner(null);
     setScoreSaved(false);
     setUsedQuestions(new Set());
 
@@ -342,16 +383,25 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
 
     setSelectedAnswer(answerIndex);
     setShowResult(true);
-    setTotalQuestions((prev) => prev + 1);
+    setCurrentPlayerState((prev) => ({
+      ...prev,
+      totalQuestions: prev.totalQuestions + 1,
+    }));
     setUsedQuestions((prev) => new Set([...prev, currentQuestion.id]));
 
     const isCorrect = answerIndex === currentQuestion.correctAnswer;
 
     if (isCorrect) {
-      setCorrectAnswers((prev) => prev + 1);
-      setScore((prev) => prev + 100);
+      setCurrentPlayerState((prev) => ({
+        ...prev,
+        correctAnswers: prev.correctAnswers + 1,
+        score: prev.score + 100,
+      }));
     } else {
-      setScore((prev) => prev - 50);
+      setCurrentPlayerState((prev) => ({
+        ...prev,
+        score: prev.score - 50,
+      }));
     }
   };
 
@@ -382,40 +432,71 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
   };
 
   const moveForward = (spaces: number) => {
-    const newPosition = Math.min(currentPosition + spaces, WIN_POSITION);
-    setCurrentPosition(newPosition);
+    const currentPlayerState = getCurrentPlayerState();
+    const newPosition = Math.min(
+      currentPlayerState.position + spaces,
+      WIN_POSITION
+    );
+    setCurrentPlayerState((prev) => ({
+      ...prev,
+      position: newPosition,
+    }));
 
     setTimeout(() => {
       if (newPosition >= WIN_POSITION) {
         setGameOver(true);
+        setWinner(currentPlayer);
         setShowQuestion(false);
       } else {
+        if (twoPlayerMode) {
+          // Switch to the other player
+          setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+        }
         presentQuestion();
       }
     }, 500);
   };
 
   const moveBackward = () => {
-    const newPosition = Math.max(currentPosition - 1, 0);
-    setCurrentPosition(newPosition);
+    const currentPlayerState = getCurrentPlayerState();
+    const newPosition = Math.max(currentPlayerState.position - 1, 0);
+    setCurrentPlayerState((prev) => ({
+      ...prev,
+      position: newPosition,
+    }));
 
     setTimeout(() => {
+      if (twoPlayerMode) {
+        // Switch to the other player
+        setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+      }
       presentQuestion();
     }, 500);
   };
 
   const resetGame = () => {
     setGameStarted(false);
-    setCurrentPosition(0);
+    setTwoPlayerMode(false);
+    setCurrentPlayer(1);
+    setPlayer1({
+      position: 0,
+      score: 0,
+      correctAnswers: 0,
+      totalQuestions: 0,
+    });
+    setPlayer2({
+      position: 0,
+      score: 0,
+      correctAnswers: 0,
+      totalQuestions: 0,
+    });
     setShowQuestion(false);
     setCurrentQuestion(null);
     setSelectedAnswer(null);
     setShowResult(false);
     setDiceRoll(null);
     setGameOver(false);
-    setScore(0);
-    setCorrectAnswers(0);
-    setTotalQuestions(0);
+    setWinner(null);
     setScoreSaved(false);
     setUsedQuestions(new Set());
   };
@@ -482,15 +563,27 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
             </Card>
 
             <div className="text-center space-y-4">
-              <Button
-                onClick={startGame}
-                size="lg"
-                className="text-lg px-8"
-                disabled={isLoadingQuestions}>
-                {isLoadingQuestions
-                  ? "Generating Questions..."
-                  : "Start Climbing!"}
-              </Button>
+              <div className="flex gap-4 justify-center">
+                <Button
+                  onClick={() => startGame(false)}
+                  size="lg"
+                  className="text-lg px-8"
+                  disabled={isLoadingQuestions}>
+                  {isLoadingQuestions
+                    ? "Generating Questions..."
+                    : "Single Player"}
+                </Button>
+                <Button
+                  onClick={() => startGame(true)}
+                  size="lg"
+                  variant="secondary"
+                  className="text-lg px-8"
+                  disabled={isLoadingQuestions}>
+                  {isLoadingQuestions
+                    ? "Generating Questions..."
+                    : "Two Players"}
+                </Button>
+              </div>
               <div>
                 <Button asChild variant="outline" size="lg">
                   <Link href="/scam-ladder/leaderboard">View Leaderboard</Link>
@@ -504,9 +597,12 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
   }
 
   if (gameOver) {
+    const winnerState = winner === 1 ? player1 : player2;
     const accuracy =
-      totalQuestions > 0
-        ? Math.round((correctAnswers / totalQuestions) * 100)
+      winnerState.totalQuestions > 0
+        ? Math.round(
+            (winnerState.correctAnswers / winnerState.totalQuestions) * 100
+          )
         : 0;
 
     return (
@@ -528,16 +624,20 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
               <Trophy className="h-10 w-10 text-primary" />
             </div>
 
-            <h2 className="text-4xl font-bold mb-4">🎉 You Won!</h2>
+            <h2 className="text-4xl font-bold mb-4">
+              🎉 {twoPlayerMode ? `Player ${winner} Wins!` : "You Won!"}
+            </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Congratulations! You've reached the top of the ladder!
+              Congratulations!{" "}
+              {twoPlayerMode ? `Player ${winner} has` : "You've"} reached the
+              top of the ladder!
             </p>
 
             <Card className="p-8 mb-8">
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {score}
+                    {winnerState.score}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Final Score
@@ -551,7 +651,7 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {correctAnswers}
+                    {winnerState.correctAnswers}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Correct Answers
@@ -559,7 +659,7 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {totalQuestions}
+                    {winnerState.totalQuestions}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Total Questions
@@ -567,6 +667,32 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
                 </div>
               </div>
             </Card>
+
+            {twoPlayerMode && (
+              <Card className="p-6 mb-8 bg-muted/50">
+                <h3 className="font-semibold mb-4">Final Scores</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div
+                    className={cn(
+                      "p-4 rounded-lg border",
+                      winner === 1 ? "bg-primary/10 border-primary" : "bg-card"
+                    )}>
+                    <div className="font-bold mb-2">Player 1</div>
+                    <div>Score: {player1.score}</div>
+                    <div>Position: {player1.position + 1}/16</div>
+                  </div>
+                  <div
+                    className={cn(
+                      "p-4 rounded-lg border",
+                      winner === 2 ? "bg-primary/10 border-primary" : "bg-card"
+                    )}>
+                    <div className="font-bold mb-2">Player 2</div>
+                    <div>Score: {player2.score}</div>
+                    <div>Position: {player2.position + 1}/16</div>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             <div className="flex gap-4 justify-center">
               <Button onClick={resetGame} size="lg">
@@ -597,15 +723,60 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
             <span className="text-sm font-medium">Exit</span>
           </Link>
 
-          <div className="flex items-center gap-4">
-            <div className="text-sm">
-              <span className="text-muted-foreground">Position: </span>
-              <span className="font-bold">{currentPosition + 1}/16</span>
-            </div>
-            <div className="text-sm">
-              <span className="text-muted-foreground">Score: </span>
-              <span className="font-bold">{score}</span>
-            </div>
+          <div className="flex items-center gap-6">
+            {twoPlayerMode && (
+              <div className="text-sm font-semibold px-3 py-1 rounded-full bg-primary/20 text-primary">
+                Player {currentPlayer}'s Turn
+              </div>
+            )}
+            {twoPlayerMode ? (
+              <>
+                <div
+                  className={cn(
+                    "text-sm",
+                    currentPlayer === 1 ? "font-bold" : "opacity-50"
+                  )}>
+                  <span className="text-muted-foreground">P1 Position: </span>
+                  <span>{player1.position + 1}/16</span>
+                </div>
+                <div
+                  className={cn(
+                    "text-sm",
+                    currentPlayer === 1 ? "font-bold" : "opacity-50"
+                  )}>
+                  <span className="text-muted-foreground">P1 Score: </span>
+                  <span>{player1.score}</span>
+                </div>
+                <div className="h-6 w-px bg-border" />
+                <div
+                  className={cn(
+                    "text-sm",
+                    currentPlayer === 2 ? "font-bold" : "opacity-50"
+                  )}>
+                  <span className="text-muted-foreground">P2 Position: </span>
+                  <span>{player2.position + 1}/16</span>
+                </div>
+                <div
+                  className={cn(
+                    "text-sm",
+                    currentPlayer === 2 ? "font-bold" : "opacity-50"
+                  )}>
+                  <span className="text-muted-foreground">P2 Score: </span>
+                  <span>{player2.score}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Position: </span>
+                  <span className="font-bold">{player1.position + 1}/16</span>
+                </div>
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Score: </span>
+                  <span className="font-bold">{player1.score}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -635,8 +806,13 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
                     displayCol = col;
                   }
 
-                  const isCurrentPosition = index === currentPosition;
-                  const isPassed = index < currentPosition;
+                  const isPlayer1Position = index === player1.position;
+                  const isPlayer2Position =
+                    index === player2.position && twoPlayerMode;
+                  const isBothPlayersHere =
+                    isPlayer1Position && isPlayer2Position;
+                  const isPassed1 = index < player1.position;
+                  const isPassed2 = index < player2.position && twoPlayerMode;
                   const isFinish = index === WIN_POSITION;
                   const isStart = index === 0;
 
@@ -648,28 +824,40 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
                         gridColumn: displayCol + 1,
                       }}
                       className={cn(
-                        "aspect-square rounded-lg border-2 flex flex-col items-center justify-center font-semibold text-base transition-all p-7",
-                        isCurrentPosition &&
+                        "aspect-square rounded-lg border-2 flex flex-col items-center justify-center font-semibold text-base transition-all p-7 relative",
+                        (isPlayer1Position || isPlayer2Position) &&
                           "border-primary bg-primary/20 scale-110 shadow-lg",
-                        isPassed &&
-                          !isCurrentPosition &&
+                        (isPassed1 || isPassed2) &&
+                          !isPlayer1Position &&
+                          !isPlayer2Position &&
                           "border-primary/30 bg-primary/5",
-                        !isPassed &&
-                          !isCurrentPosition &&
+                        !isPassed1 &&
+                          !isPassed2 &&
+                          !isPlayer1Position &&
+                          !isPlayer2Position &&
                           "border-border bg-card",
                         isFinish &&
                           "bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500",
                         isStart &&
                           "bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500"
                       )}>
-                      {isCurrentPosition && <div className="text-2xl">🎯</div>}
-                      {isFinish && !isCurrentPosition && (
+                      {isBothPlayersHere ? (
+                        <div className="text-2xl">🎯🎯</div>
+                      ) : isPlayer1Position && !isPlayer2Position ? (
+                        <div className="text-2xl">
+                          {twoPlayerMode ? "🔵" : "🎯"}
+                        </div>
+                      ) : isPlayer2Position && !isPlayer1Position ? (
+                        <div className="text-2xl">🔴</div>
+                      ) : isFinish &&
+                        !isPlayer1Position &&
+                        !isPlayer2Position ? (
                         <div className="text-2xl">🏆</div>
-                      )}
-                      {isStart && !isCurrentPosition && (
+                      ) : isStart &&
+                        !isPlayer1Position &&
+                        !isPlayer2Position ? (
                         <div className="text-2xl">🚀</div>
-                      )}
-                      {!isCurrentPosition && !isFinish && !isStart && (
+                      ) : (
                         <span className="text-muted-foreground">
                           {index + 1}
                         </span>
@@ -678,11 +866,31 @@ Provide exactly 2 options per question. The correctAnswer should be 0 or 1 (inde
                   );
                 })}
               </div>
+              {twoPlayerMode && (
+                <div className="mt-4 flex items-center justify-center gap-4 text-xs">
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg">🔵</span>
+                    <span className="text-muted-foreground">Player 1</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg">🔴</span>
+                    <span className="text-muted-foreground">Player 2</span>
+                  </div>
+                </div>
+              )}
             </Card>
 
             {/* Question Card - Right Side */}
             {showQuestion && currentQuestion && (
               <Card className="p-8 flex-1">
+                {twoPlayerMode && (
+                  <div className="mb-4 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-center">
+                    <span className="font-bold text-primary">
+                      {currentPlayer === 1 ? "🔵" : "🔴"} Player {currentPlayer}
+                      's Turn
+                    </span>
+                  </div>
+                )}
                 <h3 className="text-xl font-semibold mb-6">
                   {currentQuestion.question}
                 </h3>
